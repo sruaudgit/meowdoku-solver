@@ -1,54 +1,65 @@
 "use strict";
 
 const GridDetector = (() => {
-  // Données : { width, height, data: Uint8ClampedArray RGBA, get(x,y)->[r,g,b] }
-  // Retourne une grille { size, cells, backgroundColor, contourColor, boundingBox, ... }
-
   function detect(image) {
     const bgColor = image.get(0, 0);
     const equalBg = (c) => ColorUtil.equal(c, bgColor);
     const W = image.width, H = image.height;
+    const t = {};
+    const T0 = performance.now();
 
-    // ---- Bornes horizontales : lignes avec beaucoup de contenu non-fond ----
     const hBounds = findHorizontalBounds(image, equalBg, W, H);
     const y0 = hBounds.start, y1 = hBounds.end;
+    t.location = performance.now() - T0;
 
-    // ---- Bornes verticales dans la zone horizontale ----
     const vBounds = findVerticalBounds(image, equalBg, W, y0, y1);
     const x0 = vBounds.start, x1 = vBounds.end;
 
-    // ---- Lignes de contour (bandes de une couleur quasi-unique) ----
-    const rawH = findContourBands(image, equalBg, 'horizontal', x0, x1, y0, y1);
-    const rawV = findContourBands(image, equalBg, 'vertical', x0, x1, y0, y1);
-    const hc = mergeBands(rawH);
-    const vc = mergeBands(rawV);
+    const T1 = performance.now();
+    const { borderTop, cellCount } = detectPattern(image, equalBg, x0, x1, y0, y1);
+    t.contours = performance.now() - T1;
 
-    const nH = hc.length - 1, nV = vc.length - 1;
-    if (hc.length < 3 || vc.length < 3) {
+    if (cellCount < 1) {
       throw new Error("Impossible de détecter les contours de cases dans la grille.");
     }
-    if (nH !== nV) {
-      throw new Error("Grille non carrée détectée (lignes=" + nV + ", colonnes=" + nH + ").");
+
+    const contourColor = sampleContourColor(image, [borderTop, borderTop + 5], x0, x1, equalBg);
+
+    // Bordures verticales (colonnes) et horizontales (rangées) des cases. On
+    // évite l'extrapolation par pas constant : la taille des cases peut varier
+    // légèrement (déformation d'écran), ce qui faisait dériver les dernières
+    // lignes. On détecte donc chaque bande réelle, en n'échantillonnant qu'une
+    // fraction des lignes/colonnes.
+    const colBorders = detectBorders(image, equalBg, axisVertical, x0, x1, y0, y1, contourColor);
+    if (colBorders.length !== cellCount + 1) {
+      throw new Error("Grille non carrée détectée (lignes=" + cellCount + ", colonnes=" + (colBorders.length - 1) + ").");
     }
-    const size = nV;
 
-    // ---- Couleur de contour ----
-    const contourColor = sampleContourColor(image, hc[0], x0, x1, equalBg);
+    // Colonnes de référence (milieux de cases) pour détecter les rangées.
+    const sampleXs = [];
+    for (let j = 0; j < colBorders.length - 1; j++) {
+      sampleXs.push(Math.floor((colBorders[j][1] + colBorders[j + 1][0]) / 2));
+    }
+    const rowBorders = detectBorders(image, equalBg, axisHorizontal, x0, x1, y0, y1, contourColor, sampleXs);
+    if (rowBorders.length !== cellCount + 1) {
+      throw new Error("Grille non carrée détectée (lignes=" + (rowBorders.length - 1) + ", colonnes=" + cellCount + ").");
+    }
+    const size = cellCount;
 
-    // ---- Couleurs des cases ----
+    const T2 = performance.now();
     const cells = [];
     const colorMap = [];
     let symbolCount = 0;
 
     for (let i = 0; i < size; i++) {
       const row = [];
-      const yTop = hc[i][1] + 1;
-      const yBottom = hc[i + 1][0] - 1;
+      const yTop = rowBorders[i][1] + 1;
+      const yBottom = rowBorders[i + 1][0] - 1;
       const cellH = yBottom - yTop + 1;
 
       for (let j = 0; j < size; j++) {
-        const xLeft = vc[j][1] + 1;
-        const xRight = vc[j + 1][0] - 1;
+        const xLeft = colBorders[j][1] + 1;
+        const xRight = colBorders[j + 1][0] - 1;
         const cellW = xRight - xLeft + 1;
 
         const inX = Math.min(xLeft + 8, xRight);
@@ -73,6 +84,8 @@ const GridDetector = (() => {
       }
       cells.push(row);
     }
+    t.cells = performance.now() - T2;
+    t.total = performance.now() - T0;
 
     return {
       size,
@@ -81,11 +94,11 @@ const GridDetector = (() => {
       contourColor,
       boundingBox: { x: x0, y: y0, width: Math.abs(x1 - x0) + 1, height: Math.abs(y1 - y0) + 1 },
       colorMap: colorMap.map(c => ColorUtil.toHex(c.rgb)),
-      symbolCount
+      symbolCount,
+      timing: t
     };
   }
 
-  // Une ligne y est dans la grille si la majorité de sa largeur est non-fond.
   function rowInGrid(image, equalBg, y, W, step) {
     let nonBg = 0, total = 0;
     for (let x = 0; x < W; x += step) {
@@ -132,11 +145,10 @@ const GridDetector = (() => {
     return { start: run[0], end: run[1] };
   }
 
-  // Une ligne est un contour si ses pixels non-fond se regroupent en ≤ 1 couleur.
-  function isContourLine(image, equalBg, axis, a0, a1, fixed, step) {
+  function isContourLine(image, equalBg, x0, x1, y, step) {
     const colors = [];
-    for (let a = a0; a <= a1; a += step) {
-      const c = axis === 'horizontal' ? image.get(a, fixed) : image.get(fixed, a);
+    for (let x = x0; x <= x1; x += step) {
+      const c = image.get(x, y);
       if (!equalBg(c)) colors.push(c);
     }
     if (colors.length === 0) return false;
@@ -151,42 +163,125 @@ const GridDetector = (() => {
     return clusters.length <= 1;
   }
 
-  function findContourBands(image, equalBg, axis, x0, x1, y0, y1) {
-    const bands = [];
-    let cur = null;
-    const len = axis === 'horizontal' ? (y1 - y0 + 1) : (x1 - x0 + 1);
+  function detectPattern(image, equalBg, x0, x1, y0, y1) {
     const step = 3;
-    for (let t = 0; t < len; t++) {
-      let val;
-      if (axis === 'horizontal') {
-        val = isContourLine(image, equalBg, 'horizontal', x0, x1, y0 + t, step);
+    const gap = 8;
+
+    // Parcourt les lignes de haut en bas, mais s'arrête dès que la structure
+    // est déterminée : bordure externe, première rangée de cases, puis première
+    // bordure interne. Il n'est pas nécessaire d'aller plus loin.
+    const merged = []; // bandes de contour fusionnées : [startY, endY]
+    let cur = null;    // run en cours : [startY, endY, isContour]
+    let stop = false;
+    for (let y = y0; y <= y1 && !stop; y++) {
+      const isContour = isContourLine(image, equalBg, x0, x1, y, step);
+      if (cur && cur[2] === isContour) {
+        cur[1] = y;
       } else {
-        val = isContourLine(image, equalBg, 'vertical', y0, y1, x0 + t, step);
+        // On ferme le run en cours ; s'il est un contour, on l'insère dans les
+        // bandes fusionnées (en absorbant les petits écarts de bruit JPEG).
+        if (cur) {
+          if (cur[2]) {
+            const last = merged[merged.length - 1];
+            if (last && cur[0] - last[1] <= gap + 1) last[1] = cur[1];
+            else merged.push([cur[0], cur[1]]);
+            if (merged.length >= 2) stop = true;
+          }
+        }
+        cur = [y, y, isContour];
       }
-      if (val) {
-        const pos = axis === 'horizontal' ? y0 + t : x0 + t;
-        cur = cur ? [cur[0], pos] : [pos, pos];
+    }
+    if (cur) {
+      if (cur[2]) {
+        const last = merged[merged.length - 1];
+        if (last && cur[0] - last[1] <= gap + 1) last[1] = cur[1];
+        else merged.push([cur[0], cur[1]]);
+      }
+    }
+
+    if (merged.length < 2) {
+      throw new Error("Pattern de grille non détecté.");
+    }
+
+    // Première bande de contour = bordure externe, la suivante = bordure interne.
+    const borderTop = merged[0][0];
+    const outerBorder = merged[0][1] - merged[0][0] + 1;
+    const innerBorder = merged[1][1] - merged[1][0] + 1;
+    const cellSize = merged[1][0] - merged[0][1] - 1;
+
+    if (cellSize <= 0 || innerBorder < 0) {
+      throw new Error("Dimensions de grille incohérentes.");
+    }
+
+    // Grille carrée et régulière : le nombre de cases par côté se déduit de la
+    // hauteur totale (bordure externe haute->basse + n cases + n-1 bordures internes).
+    const totalHeight = y1 - borderTop + 1;
+    const innerHeight = totalHeight - 2 * outerBorder;
+    const cellCount = Math.round((innerHeight + innerBorder) / (cellSize + innerBorder));
+    if (cellCount < 1) {
+      throw new Error("Impossible de compter les cases de la grille.");
+    }
+
+    return { borderTop, outerBorder, cellSize, innerBorder, cellCount };
+  }
+
+  const axisVertical = 0;
+  const axisHorizontal = 1;
+
+  // Détecte les bandes de contour (bordures de cases) selon un axe.
+  // - axisVertical   : on vote pour chaque colonne x en échantillonnant des
+  //                     lignes réparties sur la hauteur.
+  // - axisHorizontal : on vote pour chaque ligne y en échantillonnant des
+  //                     colonnes données (sampleXs, typiquement les milieux
+  //                     de cases).
+  // Une coordonnée est une bordure si la couleur de contour y est présente sur
+  // la majorité des échantillons. Beaucoup plus léger qu'un balayage exhaustif.
+  function detectBorders(image, equalBg, axis, x0, x1, y0, y1, contourColor, sampleXs) {
+    let samples, extent, makeVote;
+    if (axis === axisVertical) {
+      samples = [];
+      for (let y = y0 + 5; y <= y1 - 5; y += 40) samples.push(y);
+      extent = x1 - x0 + 1;
+      makeVote = () => {
+        const vote = new Array(extent).fill(0);
+        for (const y of samples) {
+          for (let x = x0; x <= x1; x++) {
+            if (ColorUtil.equal(image.get(x, y), contourColor)) vote[x - x0]++;
+          }
+        }
+        return vote;
+      };
+    } else {
+      samples = sampleXs;
+      extent = y1 - y0 + 1;
+      makeVote = () => {
+        const vote = new Array(extent).fill(0);
+        for (const x of samples) {
+          for (let y = y0; y <= y1; y++) {
+            if (ColorUtil.equal(image.get(x, y), contourColor)) vote[y - y0]++;
+          }
+        }
+        return vote;
+      };
+    }
+
+    const threshold = Math.max(1, samples.length / 2);
+    const vote = makeVote();
+    const borders = [];
+    let cur = null;
+    for (let a = 0; a < extent; a++) {
+      const isBorder = vote[a] > threshold;
+      const pos = axis === axisVertical ? x0 + a : y0 + a;
+      if (isBorder) {
+        if (cur) cur[1] = pos;
+        else cur = [pos, pos];
       } else {
-        if (cur) bands.push(cur);
+        if (cur) borders.push(cur);
         cur = null;
       }
     }
-    if (cur) bands.push(cur);
-    return bands;
-  }
-
-  // Fusionne les bandes de contour séparées par de petits écarts (bruit JPEG / coins arrondis).
-  function mergeBands(bands, gap = 10) {
-    if (bands.length === 0) return bands;
-    const merged = [bands[0].slice()];
-    for (let i = 1; i < bands.length; i++) {
-      if (bands[i][0] - merged[merged.length - 1][1] < gap) {
-        merged[merged.length - 1][1] = bands[i][1];
-      } else {
-        merged.push(bands[i].slice());
-      }
-    }
-    return merged;
+    if (cur) borders.push(cur);
+    return borders;
   }
 
   function sampleContourColor(image, band, x0, x1, equalBg) {
@@ -200,7 +295,6 @@ const GridDetector = (() => {
     return [acc[0] / count, acc[1] / count, acc[2] / count];
   }
 
-  // Assigne un index de couleur (1..n) à une couleur RGB en se basant sur la distance lab.
   function assignColor(colorMap, rgb) {
     const lab = ColorUtil.rgbToLab(rgb[0], rgb[1], rgb[2]);
     for (let i = 0; i < colorMap.length; i++) {

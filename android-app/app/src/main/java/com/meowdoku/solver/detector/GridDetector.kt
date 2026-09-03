@@ -42,22 +42,44 @@ object GridDetector {
         val x0 = vBounds.start
         val x1 = vBounds.end
 
-        val rawH = findContourBands(image, equalBg, 'h', x0, x1, y0, y1)
-        val rawV = findContourBands(image, equalBg, 'v', x0, x1, y0, y1)
-        val hc = mergeBands(rawH)
-        val vc = mergeBands(rawV)
-
-        val nH = hc.size - 1
-        val nV = vc.size - 1
-        if (hc.size < 3 || vc.size < 3) {
+        // Détermine la structure de la grille (bordure externe, taille de case,
+        // nombre de cases) en ne balayant que les premières lignes (arrêt précoce).
+        val pattern = detectPattern(image, equalBg, x0, x1, y0, y1)
+        val cellCount = pattern.cellCount
+        if (cellCount < 1) {
             throw DetectionException("Impossible de détecter les contours de cases dans la grille.")
         }
-        if (nH != nV) {
-            throw DetectionException("Grille non carrée détectée (lignes=$nV, colonnes=$nH).")
-        }
-        val size = nV
 
-        val contourColor = sampleContourColor(image, hc[0], x0, x1, equalBg)
+        val contourColor = sampleContourColor(
+            image, intArrayOf(pattern.borderTop, pattern.borderTop + 5), x0, x1, equalBg
+        )
+
+        // Bordures verticales (colonnes) puis horizontales (rangées) des cases.
+        // On n'extrapole pas par pas constant : la taille des cases peut varier
+        // légèrement (déformation d'écran), ce qui faisait dériver les dernières
+        // lignes. Chaque bande est donc détectée à sa position réelle.
+        val colBorders = detectBorders(
+            image, equalBg, AXIS_VERTICAL, x0, x1, y0, y1, contourColor
+        )
+        if (colBorders.size != cellCount + 1) {
+            throw DetectionException(
+                "Grille non carrée détectée (lignes=$cellCount, colonnes=${colBorders.size - 1})."
+            )
+        }
+
+        // Colonnes de référence (milieux de cases) pour détecter les rangées.
+        val sampleXs = IntArray(colBorders.size - 1) { j ->
+            Math.floorDiv(colBorders[j][1] + colBorders[j + 1][0], 2)
+        }
+        val rowBorders = detectBorders(
+            image, equalBg, AXIS_HORIZONTAL, x0, x1, y0, y1, contourColor, sampleXs
+        )
+        if (rowBorders.size != cellCount + 1) {
+            throw DetectionException(
+                "Grille non carrée détectée (lignes=${rowBorders.size - 1}, colonnes=$cellCount)."
+            )
+        }
+        val size = cellCount
 
         val cells = mutableListOf<List<Cell>>()
         val colorMap = mutableListOf<ColorEntry>()
@@ -65,13 +87,13 @@ object GridDetector {
 
         for (i in 0 until size) {
             val row = mutableListOf<Cell>()
-            val yTop = hc[i][1] + 1
-            val yBottom = hc[i + 1][0] - 1
+            val yTop = rowBorders[i][1] + 1
+            val yBottom = rowBorders[i + 1][0] - 1
             val cellH = yBottom - yTop + 1
 
             for (j in 0 until size) {
-                val xLeft = vc[j][1] + 1
-                val xRight = vc[j + 1][0] - 1
+                val xLeft = colBorders[j][1] + 1
+                val xRight = colBorders[j + 1][0] - 1
                 val cellW = xRight - xLeft + 1
 
                 val inX = minOf(xLeft + 8, xRight)
@@ -189,21 +211,23 @@ object GridDetector {
 
     // ---- Contours ----
 
+    private const val AXIS_VERTICAL = 0
+    private const val AXIS_HORIZONTAL = 1
+
     private fun isContourLine(
         image: PixelImage,
         equalBg: (IntArray) -> Boolean,
-        axis: Char,
-        a0: Int,
-        a1: Int,
-        fixed: Int,
+        x0: Int,
+        x1: Int,
+        y: Int,
         step: Int
     ): Boolean {
         val colors = mutableListOf<IntArray>()
-        var a = a0
-        while (a <= a1) {
-            val c = if (axis == 'h') image.get(a, fixed) else image.get(fixed, a)
+        var x = x0
+        while (x <= x1) {
+            val c = image.get(x, y)
             if (!equalBg(c)) colors.add(c)
-            a += step
+            x += step
         }
         if (colors.isEmpty()) return false
         val clusters = mutableListOf<IntArray>()
@@ -217,50 +241,144 @@ object GridDetector {
         return clusters.size <= 1
     }
 
-    private fun findContourBands(
+    private data class Pattern(val borderTop: Int, val cellCount: Int)
+
+    /**
+     * Balaye les lignes de haut en bas mais s'arrête dès que la structure est
+     * déterminée : bordure externe, première rangée de cases, puis première
+     * bordure interne. Ne balaye donc qu'une petite fraction de la hauteur.
+     */
+    private fun detectPattern(
         image: PixelImage,
         equalBg: (IntArray) -> Boolean,
-        axis: Char,
         x0: Int,
         x1: Int,
         y0: Int,
         y1: Int
-    ): MutableList<IntArray> {
-        val bands = mutableListOf<IntArray>()
-        var cur: IntArray? = null
-        val len = if (axis == 'h') (y1 - y0 + 1) else (x1 - x0 + 1)
+    ): Pattern {
         val step = 3
-        for (t in 0 until len) {
-            val val_: Boolean
-            if (axis == 'h') {
-                val_ = isContourLine(image, equalBg, 'h', x0, x1, y0 + t, step)
+        val gap = 8
+        val merged = mutableListOf<IntArray>() // bandes de contour fusionnées
+        var cur: IntArray? = null
+        var curContour = false
+        var stop = false
+
+        var y = y0
+        while (y <= y1 && !stop) {
+            val isContour = isContourLine(image, equalBg, x0, x1, y, step)
+            if (cur != null && curContour == isContour) {
+                cur!![1] = y
             } else {
-                val_ = isContourLine(image, equalBg, 'v', y0, y1, x0 + t, step)
+                if (cur != null) {
+                    if (curContour) {
+                        val last = merged.lastOrNull()
+                        if (last != null && cur!![0] - last[1] <= gap + 1) {
+                            last[1] = cur!![1]
+                        } else {
+                            merged.add(intArrayOf(cur!![0], cur!![1]))
+                        }
+                        if (merged.size >= 2) stop = true
+                    }
+                }
+                cur = intArrayOf(y, y)
+                curContour = isContour
             }
-            if (val_) {
-                val pos = if (axis == 'h') y0 + t else x0 + t
-                cur = if (cur != null) intArrayOf(cur[0], pos) else intArrayOf(pos, pos)
-            } else {
-                if (cur != null) bands.add(cur)
-                cur = null
-            }
+            y++
         }
-        if (cur != null) bands.add(cur)
-        return bands
+        if (cur != null && curContour) {
+            val last = merged.lastOrNull()
+            if (last != null && cur!![0] - last[1] <= gap + 1) last[1] = cur!![1]
+            else merged.add(intArrayOf(cur!![0], cur!![1]))
+        }
+
+        if (merged.size < 2) {
+            throw DetectionException("Pattern de grille non détecté.")
+        }
+
+        // Première bande de contour = bordure externe, la suivante = bordure interne.
+        val borderTop = merged[0][0]
+        val outerBorder = merged[0][1] - merged[0][0] + 1
+        val innerBorder = merged[1][1] - merged[1][0] + 1
+        val cellSize = merged[1][0] - merged[0][1] - 1
+        if (cellSize <= 0 || innerBorder < 0) {
+            throw DetectionException("Dimensions de grille incohérentes.")
+        }
+
+        // Grille carrée : le nombre de cases par côté se déduit de la hauteur totale.
+        val totalHeight = y1 - borderTop + 1
+        val innerHeight = totalHeight - 2 * outerBorder
+        val cellCount = Math.round((innerHeight + innerBorder).toDouble() / (cellSize + innerBorder)).toInt()
+        if (cellCount < 1) {
+            throw DetectionException("Impossible de compter les cases de la grille.")
+        }
+
+        return Pattern(borderTop, cellCount)
     }
 
-    private fun mergeBands(bands: List<IntArray>, gap: Int = 10): List<IntArray> {
-        if (bands.isEmpty()) return bands
-        val merged = mutableListOf<IntArray>()
-        merged.add(bands[0].copyOf())
-        for (i in 1 until bands.size) {
-            if (bands[i][0] - merged[merged.size - 1][1] < gap) {
-                merged[merged.size - 1][1] = bands[i][1]
-            } else {
-                merged.add(bands[i].copyOf())
+    /**
+     * Détecte les bandes de contour (bordures de cases) selon un axe.
+     * - AXIS_VERTICAL   : vote par colonne x sur des lignes échantillonnées.
+     * - AXIS_HORIZONTAL : vote par ligne y sur des colonnes données (sampleXs).
+     */
+    private fun detectBorders(
+        image: PixelImage,
+        equalBg: (IntArray) -> Boolean,
+        axis: Int,
+        x0: Int,
+        x1: Int,
+        y0: Int,
+        y1: Int,
+        contourColor: IntArray,
+        sampleXs: IntArray? = null
+    ): MutableList<IntArray> {
+        val border: (Int, Int) -> Boolean = { px, py -> ColorUtils.colorsEqual(image.get(px, py), contourColor) }
+
+        val vote: IntArray
+        if (axis == AXIS_VERTICAL) {
+            val samples = mutableListOf<Int>()
+            var yy = y0 + 5
+            while (yy <= y1 - 5) {
+                samples.add(yy)
+                yy += 40
             }
+            val extent = x1 - x0 + 1
+            vote = IntArray(extent)
+            for (sy in samples) {
+                for (x in x0..x1) if (border(x, sy)) vote[x - x0]++
+            }
+            val threshold = maxOf(1, samples.size / 2)
+            val borders = mutableListOf<IntArray>()
+            var cur: IntArray? = null
+            for (x in x0..x1) {
+                if (vote[x - x0] > threshold) {
+                    cur = if (cur != null) intArrayOf(cur[0], x) else intArrayOf(x, x)
+                } else {
+                    if (cur != null) borders.add(cur)
+                    cur = null
+                }
+            }
+            if (cur != null) borders.add(cur)
+            return borders
+        } else {
+            val extent = y1 - y0 + 1
+            vote = IntArray(extent)
+            for (x in sampleXs!!) {
+                for (y in y0..y1) if (border(x, y)) vote[y - y0]++
+            }
+            val threshold = maxOf(1, sampleXs.size / 2)
+            val borders = mutableListOf<IntArray>()
+            var cur: IntArray? = null
+            for (y in y0..y1) {
+                if (vote[y - y0] > threshold) {
+                    cur = if (cur != null) intArrayOf(cur[0], y) else intArrayOf(y, y)
+                } else {
+                    if (cur != null) borders.add(cur)
+                    cur = null
+                }
+            }
+            if (cur != null) borders.add(cur)
+            return borders
         }
-        return merged
     }
 
     private fun sampleContourColor(

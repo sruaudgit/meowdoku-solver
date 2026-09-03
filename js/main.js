@@ -100,12 +100,18 @@
       setTimeout(() => {
         const detected = GridDetector.detect(currentImage);
         const ms = (performance.now() - start).toFixed(1);
+        const t = detected.timing || {};
+        const part = (k) => t[k] != null ? t[k].toFixed(1) : "–";
+        const breakdown = "Détection en " + ms + " ms — "
+          + "localisation : " + part("location") + " ms, "
+          + "contours : " + part("contours") + " ms, "
+          + "couleurs des cases : " + part("cells") + " ms";
         initEditable(detected);
         resultEl.classList.remove("hidden");
         solveBtn.classList.remove("hidden");
         exportBtn.classList.remove("hidden");
         renderAll();
-        setStatus("Grille détectée en " + ms + " ms.", "info");
+        setStatus(breakdown, "info");
       }, 0);
     } catch (err) {
       setStatus("Erreur de détection : " + err.message, "error");
