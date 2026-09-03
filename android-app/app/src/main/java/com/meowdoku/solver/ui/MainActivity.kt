@@ -1,9 +1,13 @@
 package com.meowdoku.solver.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -48,7 +52,46 @@ class MainActivity : AppCompatActivity() {
 
         layout.addView(title)
         layout.addView(body)
+
+        if (!Settings.canDrawOverlays(this)) {
+            val marginTop = (24 * resources.displayMetrics.density).toInt()
+
+            val warning = TextView(this).apply {
+                text = getString(R.string.overlay_permission_required)
+                textSize = 15f
+                setTextColor(getColor(R.color.warning))
+                setLineSpacing(0f, 1.3f)
+                setPadding(0, marginTop, 0, 0)
+            }
+
+            val allowButton = Button(this).apply {
+                text = getString(R.string.overlay_permission_allow)
+                setOnClickListener { requestOverlayPermission() }
+            }
+
+            layout.addView(warning, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ))
+            layout.addView(allowButton, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = (16 * resources.displayMetrics.density).toInt() })
+        }
+
         setContentView(layout)
+    }
+
+    private fun requestOverlayPermission() {
+        try {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
+        } catch (e: Exception) {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+        }
     }
 
     private fun requestNotificationPermission() {

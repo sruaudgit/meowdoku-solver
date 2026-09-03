@@ -9,6 +9,8 @@
     <string name="overlay_close">Fermer la superposition</string>
     <string name="overlay_fullscreen">Afficher en plein écran</string>
     <string name="overlay_back">Revenir en superposition</string>
+    <string name="overlay_permission_required">Pour afficher la solution par-dessus le jeu, autorisez « Afficher par-dessus les autres applications ».</string>
+    <string name="overlay_permission_allow">Autoriser</string>
     <string name="notification_error">Échec de l\'analyse</string>
     <string name="analyzing">Analyse de la grille en cours…</string>
     <string name="solution_desc">Grille Meowdoku résolue</string>

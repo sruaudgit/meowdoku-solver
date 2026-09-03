@@ -5,4 +5,5 @@
     <color name="primary">#CBA6F7</color>
     <color name="on_primary">#11111B</color>
     <color name="white">#FFFFFF</color>
+    <color name="warning">#F9C74F</color>
 </resources>
