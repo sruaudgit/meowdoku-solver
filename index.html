@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meowdoku Solver — Détection de grille</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Meowdoku Solver — Étape 1 : Détection de grille</h1>
+  </header>
+
+  <section id="upload-zone" class="dropzone">
+    <input type="file" id="file-input" accept=".jpg,.jpeg" hidden>
+    <p>Glissez-déposez une capture d'écran <strong>.jpg</strong> ici, ou <button type="button" id="browse-btn">cliquez pour choisir</button>.</p>
+  </section>
+
+  <section id="status" class="status hidden"></section>
+
+  <main id="result" class="hidden">
+    <aside id="image-panel">
+      <h2>Image brute</h2>
+      <canvas id="image-canvas"></canvas>
+      <div id="image-meta" class="meta"></div>
+    </aside>
+
+    <section id="grid-panel">
+      <h2>Grille détectée</h2>
+      <div id="grid-meta" class="meta"></div>
+      <div id="grid-wrapper">
+        <table id="grid-table"></table>
+      </div>
+      <div id="legend" class="legend"></div>
+    </section>
+  </main>
+
+  <script src="js/color.js"></script>
+  <script src="js/detector.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
