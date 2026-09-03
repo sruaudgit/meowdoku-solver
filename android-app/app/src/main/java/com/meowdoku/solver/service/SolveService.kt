@@ -94,12 +94,7 @@ class SolveService : Service() {
 
             Log.d(TAG, "Détection en cours…")
             val grid = GridDetector.detect(pixels, width, height)
-            Log.d(TAG, "Grille détectée : ${grid.size}x${grid.size}, symboles=${grid.symbolCount}")
-            Log.d(TAG, "colorMap: ${grid.colorMap}")
-            for (i in 0 until grid.size) {
-                val row = grid.cells[i].joinToString(",") { it.color.toString() }
-                Log.d(TAG, "row$i: [$row]")
-            }
+            Log.d(TAG, "Grille détectée : ${grid.size}x${grid.size}, ${grid.symbolCount} symbole(s), ${grid.colorMap.size} couleurs")
 
             val fixedSymbols = GridSolver.collectSymbols(grid)
             Log.d(TAG, "Résolution en cours…")
