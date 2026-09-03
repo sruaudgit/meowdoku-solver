@@ -125,4 +125,59 @@ if (st2[0][1] !== "impossible-auto") { console.log("FAIL covered by two:", st2[0
 st2 = GridSolver.derive(solverGrid, [sB], manualEmpty);
 if (st2[0][1] !== "impossible-auto") { console.log("FAIL still covered by B:", st2[0][1]); ok = false; }
 
+// ---- findSolution ----
+// Résoud la grille sample avec le symbole fixe (9,9) comme seul symbole posé.
+const fixed = GridSolver.collectSymbols(solverGrid); // = le symbole (9,9)
+const sol = GridSolver.findSolution(solverGrid, []);
+const solWithFixed = GridSolver.findSolution(solverGrid, fixed);
+
+if (!sol) { console.log("FAIL no solution"); ok = false; }
+if (!solWithFixed) { console.log("FAIL no solution with fixed"); ok = false; }
+
+function validateSolution(solCells, n) {
+  if (solCells.length !== n) return "len=" + solCells.length;
+  const rows = new Set(), cols = new Set(), colors = new Set();
+  for (const s of solCells) {
+    if (rows.has(s.row)) return "dup row " + s.row;
+    if (cols.has(s.col)) return "dup col " + s.col;
+    if (colors.has(s.color)) return "dup color " + s.color;
+    rows.add(s.row); cols.add(s.col); colors.add(s.color);
+  }
+  // couleurs = toutes distinctes (n couleurs, n symboles -> permutation)
+  // adjacence
+  for (let a = 0; a < n; a++) {
+    for (let b = a + 1; b < n; b++) {
+      if (Math.abs(solCells[a].row - solCells[b].row) <= 1 &&
+          Math.abs(solCells[a].col - solCells[b].col) <= 1) {
+        return "adjacent " + a + "," + b;
+      }
+    }
+  }
+  return null;
+}
+
+for (const [name, s] of [["empty", sol], ["withFixed", solWithFixed]]) {
+  if (s) {
+    const err = validateSolution(s, grid.size);
+    if (err) { console.log(`FAIL ${name} solution invalid: ${err}`); ok = false; }
+    else console.log(`${name}: solution valide`);
+  }
+}
+
+// avec fixe : (9,9) doit être présent
+if (solWithFixed) {
+  const present = solWithFixed.some(s => s.row === 9 && s.col === 9 && s.color === 10);
+  if (!present) { console.log("FAIL fixed (9,9) not in solution"); ok = false; }
+  console.log("solution fixe:", JSON.stringify(solWithFixed));
+}
+
+// cohérence : deux symboles sur la même ligne doivent lever une erreur
+try {
+  GridSolver.findSolution(solverGrid, [ {row:0,col:1,color:1}, {row:0,col:2,color:2} ]);
+  console.log("FAIL no error on inconsistent rows"); ok = false;
+} catch (e) {
+  if (!/incoh/.test(e.message)) { console.log("FAIL wrong error msg:", e.message); ok = false; }
+}
+
+console.log("bbox:", JSON.stringify(grid.boundingBox));
 console.log(ok ? "PASS" : "FAIL");

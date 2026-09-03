@@ -11,6 +11,7 @@
   const gridMeta = document.getElementById("grid-meta");
   const gridTable = document.getElementById("grid-table");
   const legendEl = document.getElementById("legend");
+  const solveBtn = document.getElementById("solve-btn");
 
   let currentImage = null;
 
@@ -82,6 +83,14 @@
     imageMeta.textContent = "Dimensions : " + img.naturalWidth + "x" + img.naturalHeight +
       " px (analysé à " + drawW + "x" + drawH + " px)";
 
+    // Éfface l'ancienne grille affichée tant que la nouvelle n'est pas analysée.
+    resultEl.classList.add("hidden");
+    grid = null;
+    gridTable.innerHTML = "";
+    gridMeta.innerHTML = "";
+    legendEl.innerHTML = "";
+    solveBtn.classList.add("hidden");
+
     try {
       setStatus("Analyse de la grille en cours…", "info");
       const start = performance.now();
@@ -91,11 +100,11 @@
         const ms = (performance.now() - start).toFixed(1);
         initEditable(detected);
         resultEl.classList.remove("hidden");
+        solveBtn.classList.remove("hidden");
         renderAll();
         setStatus("Grille détectée en " + ms + " ms.", "info");
       }, 0);
     } catch (err) {
-      resultEl.classList.add("hidden");
       setStatus("Erreur de détection : " + err.message, "error");
       console.error(err);
     }
@@ -135,6 +144,36 @@
   function isSymbolAt(row, col) {
     return symbols.some(s => s.row === row && s.col === col);
   }
+
+  // ---- Résolution ----
+  function solve() {
+    if (!grid) return;
+    const fixed = symbols.map(s => ({ row: s.row, col: s.col, color: s.color }));
+    setStatus("Résolution en cours…", "info");
+    setTimeout(() => {
+      try {
+        const start = performance.now();
+        const solution = GridSolver.findSolution(grid, fixed);
+        const ms = (performance.now() - start).toFixed(1);
+
+        if (!solution) {
+          setStatus("Aucune solution trouvée avec les symboles posés.", "error");
+          return;
+        }
+
+        // applique la solution : remplace les symboles, efface les croix manuelles (grille propre)
+        symbols = solution.map((s, idx) => ({ id: idx + 1, row: s.row, col: s.col, color: s.color }));
+        nextSymbolId = symbols.length + 1;
+        manual = GridSolver.createManualMap(grid);
+        renderAll();
+        setStatus("Solution trouvée (unique) en " + ms + " ms.", "info");
+      } catch (err) {
+        setStatus(err.message, "error");
+      }
+    }, 0);
+  }
+
+  solveBtn.addEventListener("click", solve);
 
   // ---- Rendu ----
   function renderAll() {

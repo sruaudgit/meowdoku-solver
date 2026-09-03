@@ -83,5 +83,100 @@ const GridSolver = (() => {
     return m;
   }
 
-  return { derive, collectSymbols, createManualMap };
+  // Vérifie que des symboles posés ne se contredisent pas.
+  // Lève une Error descriptive si deux symboles partagent ligne/colonne/couleur ou sont adjacents.
+  function checkConsistency(symbols, n) {
+    for (let a = 0; a < symbols.length; a++) {
+      for (let b = a + 1; b < symbols.length; b++) {
+        const s = symbols[a], t = symbols[b];
+        if (s.row === t.row) {
+          throw new Error("Symboles incohérents : deux symboles sur la ligne " + s.row + ".");
+        }
+        if (s.col === t.col) {
+          throw new Error("Symboles incohérents : deux symboles sur la colonne " + s.col + ".");
+        }
+        if (s.color === t.color) {
+          throw new Error("Symboles incohérents : deux symboles de la couleur " + s.color + ".");
+        }
+        if (Math.abs(s.row - t.row) <= 1 && Math.abs(s.col - t.col) <= 1) {
+          throw new Error("Symboles incohérents : les symboles (" + s.row + "," + s.col +
+            ") et (" + t.row + "," + t.col + ") sont adjacents.");
+        }
+      }
+    }
+    void n;
+  }
+
+  // Résout la grille : trouve une solution complète (n symboles) par backtracking ligne par ligne.
+  // grid : { size, cells: [[{color}]] }
+  // fixedSymbols : symboles déjà posés à conserver (positions fixes).
+  // Retourne [{row,col,color}] (tous les n symboles) ou null si aucune solution.
+  function findSolution(grid, fixedSymbols) {
+    const n = grid.size;
+    checkConsistency(fixedSymbols, n);
+
+    // symboles obligatoires par ligne/colonne/couleur
+    const fixedRow = new Array(n).fill(null);
+    const usedCols = new Set();
+    const usedColors = new Set();
+    for (const s of fixedSymbols) {
+      fixedRow[s.row] = s;
+      usedCols.add(s.col);
+      usedColors.add(s.color);
+    }
+
+    // tri des lignes : celles avec symbole fixe d'abord (heuristique), sinon par nb de candidats
+    const placed = []; // [{row,col,color}]
+    const rows = [];
+    for (let r = 0; r < n; r++) rows.push(r);
+    rows.sort((a, b) => {
+      if (fixedRow[a] && !fixedRow[b]) return -1;
+      if (!fixedRow[a] && fixedRow[b]) return 1;
+      return candidateCount(grid, a) - candidateCount(grid, b);
+    });
+
+    function candidateCount(g, r) {
+      let c = 0;
+      for (let j = 0; j < n; j++) if (feasible(g, r, j)) c++;
+      return c;
+    }
+
+    function feasible(g, r, c) {
+      if (usedCols.has(c)) return false;
+      if (usedColors.has(g.cells[r][c].color)) return false;
+      for (const p of placed) {
+        if (Math.abs(p.row - r) <= 1 && Math.abs(p.col - c) <= 1) return false;
+      }
+      return true;
+    }
+
+    function backtrack() {
+      if (placed.length === n) return true;
+      const r = rows[placed.length];
+      const fixed = fixedRow[r];
+      if (fixed) {
+        placed.push(fixed);
+        if (backtrack()) return true;
+        placed.pop();
+        return false;
+      }
+      for (let c = 0; c < n; c++) {
+        if (!feasible(grid, r, c)) continue;
+        placed.push({ row: r, col: c, color: grid.cells[r][c].color });
+        usedCols.add(c);
+        usedColors.add(grid.cells[r][c].color);
+        if (backtrack()) return true;
+        placed.pop();
+        usedCols.delete(c);
+        usedColors.delete(grid.cells[r][c].color);
+      }
+      return false;
+    }
+
+    const ok = backtrack();
+    if (!ok) return null;
+    return placed.slice();
+  }
+
+  return { derive, collectSymbols, createManualMap, checkConsistency, findSolution };
 })();
