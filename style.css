@@ -118,6 +118,18 @@ table#grid-table td {
   color: #111;
   border: 1px solid rgba(0, 0, 0, 0.35);
   position: relative;
+  cursor: pointer;
+}
+
+td .cell-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  pointer-events: none;
 }
 
 td.symbol {
@@ -125,16 +137,24 @@ td.symbol {
   outline-offset: -3px;
 }
 
-td.symbol::after {
-  content: "✱";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
+td.symbol .cell-label {
   color: #111;
   text-shadow: 0 0 2px #fff;
+}
+
+td.impossible-manual {
+  filter: brightness(0.55);
+}
+
+td.impossible-manual .cell-label {
+  color: #d01f1f;
+  text-shadow: 0 0 2px #000;
+  font-size: 16px;
+}
+
+td.impossible-auto .cell-label {
+  color: rgba(17, 17, 17, 0.55);
+  font-size: 16px;
 }
 
 #legend {
@@ -157,7 +177,21 @@ td.symbol::after {
   height: 16px;
   border-radius: 4px;
   border: 1px solid rgba(255,255,255,0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  color: #111;
 }
+
+.legend-swatch.imp-manual { background: #444; color: #d01f1f; }
+.legend-swatch.imp-auto { background: #cdcdcd; color: rgba(17,17,17,0.55); }
+.legend-swatch.free {
+  background: linear-gradient(135deg, #eee 25%, #fff 25%, #fff 50%, #eee 50%, #eee 75%, #fff 75%);
+  background-size: 8px 8px;
+}
+.legend-swatch.symbol { background: #fff; }
 
 @media (max-width: 900px) {
   main#result { grid-template-columns: 1fr; }

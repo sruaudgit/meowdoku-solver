@@ -14,6 +14,13 @@
 
   let currentImage = null;
 
+  // État éditable de la grille
+  let grid = null;        // données détectées (size, cells, colorMap, ...)
+  let symbols = [];       // [{id,row,col,color}]
+  let nextSymbolId = 1;
+  let manual = null;      // boolean[row][col] croix manuelles
+  let cells = [];         // noeuds <td> par [row][col]
+
   // ---- Drag & drop + browse ----
   browseBtn.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", () => {
@@ -52,7 +59,7 @@
   }
 
   function processImage(img) {
-    const drawW = 1080; // largeur de traitement fixe (échelle), on garde le ratio
+    const drawW = 1080;
     const drawH = Math.round(img.height * (drawW / img.width));
     canvas.width = drawW;
     canvas.height = drawH;
@@ -76,12 +83,17 @@
       " px (analysé à " + drawW + "x" + drawH + " px)";
 
     try {
+      setStatus("Analyse de la grille en cours…", "info");
       const start = performance.now();
-      const grid = GridDetector.detect(currentImage);
-      const ms = (performance.now() - start).toFixed(1);
-      resultEl.classList.remove("hidden");
-      renderGrid(grid, ms);
-      setStatus("Grille détectée en " + ms + " ms.", "info");
+      // Laisse le navigateur peindre le message avant le calcul synchrone.
+      setTimeout(() => {
+        const detected = GridDetector.detect(currentImage);
+        const ms = (performance.now() - start).toFixed(1);
+        initEditable(detected);
+        resultEl.classList.remove("hidden");
+        renderAll();
+        setStatus("Grille détectée en " + ms + " ms.", "info");
+      }, 0);
     } catch (err) {
       resultEl.classList.add("hidden");
       setStatus("Erreur de détection : " + err.message, "error");
@@ -89,36 +101,134 @@
     }
   }
 
-  function renderGrid(grid, ms) {
+  // Initialise l'état éditable depuis la grille détectée.
+  function initEditable(detected) {
+    grid = detected;
+    symbols = GridSolver.collectSymbols(detected, nextSymbolId);
+    nextSymbolId = symbols.length + 1;
+    manual = GridSolver.createManualMap(detected);
+    cells = [];
+  }
+
+  // ---- Édition ----
+  function toggleManual(row, col) {
+    if (isSymbolAt(row, col)) return;
+    manual[row][col] = !manual[row][col];
+    renderAll();
+  }
+
+  function setSymbol(row, col) {
+    // pose un symbole, efface la croix manuelle de cette case
+    if (isSymbolAt(row, col)) return;
+    symbols.push({ id: nextSymbolId++, row, col, color: grid.cells[row][col].color });
+    manual[row][col] = false;
+    renderAll();
+  }
+
+  function removeSymbol(row, col) {
+    const idx = symbols.findIndex(s => s.row === row && s.col === col);
+    if (idx === -1) return;
+    symbols.splice(idx, 1);
+    renderAll();
+  }
+
+  function isSymbolAt(row, col) {
+    return symbols.some(s => s.row === row && s.col === col);
+  }
+
+  // ---- Rendu ----
+  function renderAll() {
+    renderTable();
+    renderMeta();
+    renderLegend();
+  }
+
+  function renderTable() {
+    const states = GridSolver.derive(grid, symbols, manual);
+    const n = grid.size;
+    gridTable.innerHTML = "";
+    const tbody = document.createElement("tbody");
+    cells = new Array(n);
+
+    for (let i = 0; i < n; i++) {
+      const tr = document.createElement("tr");
+      cells[i] = new Array(n);
+      for (let j = 0; j < n; j++) {
+        const cell = grid.cells[i][j];
+        const state = states[i][j];
+        const td = document.createElement("td");
+        td.style.backgroundColor = cell.hex;
+        td.dataset.row = i;
+        td.dataset.col = j;
+        td.setAttribute("class", "cell " + state);
+        td.title = "case (" + i + "," + j + ") couleur " + cell.color + " — " + state;
+
+        const label = document.createElement("span");
+        label.className = "cell-label";
+        if (state === "symbol") label.textContent = "★";
+        else if (state === "impossible-manual" || state === "impossible-auto") label.textContent = "✕";
+        td.appendChild(label);
+
+        // Interactivité
+        td.addEventListener("click", () => toggleManual(i, j));
+        td.addEventListener("dblclick", e => {
+          if (isSymbolAt(i, j)) removeSymbol(i, j);
+          else setSymbol(i, j);
+        });
+
+        tr.appendChild(td);
+        cells[i][j] = td;
+      }
+      tbody.appendChild(tr);
+    }
+    gridTable.appendChild(tbody);
+  }
+
+  function renderMeta() {
+    const states = GridSolver.derive(grid, symbols, manual);
+    let countSymbol = 0, countManual = 0, countAuto = 0, countFree = 0;
+    for (let i = 0; i < grid.size; i++) {
+      for (let j = 0; j < grid.size; j++) {
+        const s = states[i][j];
+        if (s === "symbol") countSymbol++;
+        else if (s === "impossible-manual") countManual++;
+        else if (s === "impossible-auto") countAuto++;
+        else countFree++;
+      }
+    }
+
     gridMeta.innerHTML =
       "Taille : <strong>" + grid.size + "x" + grid.size + "</strong> (" + (grid.size * grid.size) + " cases)" +
       "<br>BoundingBox : x=" + grid.boundingBox.x + ", y=" + grid.boundingBox.y +
       ", w=" + grid.boundingBox.width + ", h=" + grid.boundingBox.height +
       "<br>Fond : " + ColorUtil.toHex(grid.backgroundColor) +
       " | Contour : " + ColorUtil.toHex(grid.contourColor) +
-      " | Symbole(s) : " + grid.symbolCount +
-      "<br>Temps : " + ms + " ms";
+      "<br>Symbole(s) : " + countSymbol + " | Impossibles (manuel) : " + countManual +
+      " | Impossibles (auto) : " + countAuto + " | Libres : " + countFree +
+      "<br><em>Cliquez pour marquer impossible, double-cliquez pour poser un symbole.</em>";
+  }
 
-    const frag = document.createDocumentFragment();
-    const tbody = document.createElement("tbody");
-    for (let i = 0; i < grid.size; i++) {
-      const tr = document.createElement("tr");
-      for (let j = 0; j < grid.size; j++) {
-        const cell = grid.cells[i][j];
-        const td = document.createElement("td");
-        td.style.backgroundColor = cell.hex;
-        td.title = "case (" + i + "," + j + ") couleur " + cell.color + " état " + cell.state;
-        if (cell.state === "symbol") td.className = "symbol";
-        tr.appendChild(td);
-      }
-      tbody.appendChild(tr);
-    }
-    frag.appendChild(tbody);
-    gridTable.innerHTML = "";
-    gridTable.appendChild(frag);
-
-    // Légende
+  function renderLegend() {
     legendEl.innerHTML = "";
+    // États
+    const states = [
+      { key: "symbol", label: "Symbole", cls: "legend-swatch symbol" },
+      { key: "impossible-manual", label: "Impossible (manuel)", cls: "legend-swatch imp-manual" },
+      { key: "impossible-auto", label: "Impossible (auto)", cls: "legend-swatch imp-auto" },
+      { key: "free", label: "Libre", cls: "legend-swatch free" }
+    ];
+    states.forEach(s => {
+      const item = document.createElement("div");
+      item.className = "legend-item";
+      const sw = document.createElement("span");
+      sw.className = s.cls;
+      sw.textContent = s.key === "symbol" ? "★" : s.key.startsWith("impossible") ? "✕" : "";
+      item.appendChild(sw);
+      item.appendChild(document.createTextNode(s.label));
+      legendEl.appendChild(item);
+    });
+
+    // Couleurs
     grid.colorMap.forEach((hex, idx) => {
       const item = document.createElement("div");
       item.className = "legend-item";
