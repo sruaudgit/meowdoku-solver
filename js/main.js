@@ -12,6 +12,7 @@
   const gridTable = document.getElementById("grid-table");
   const legendEl = document.getElementById("legend");
   const solveBtn = document.getElementById("solve-btn");
+  const exportBtn = document.getElementById("export-btn");
 
   let currentImage = null;
 
@@ -90,6 +91,7 @@
     gridMeta.innerHTML = "";
     legendEl.innerHTML = "";
     solveBtn.classList.add("hidden");
+    exportBtn.classList.add("hidden");
 
     try {
       setStatus("Analyse de la grille en cours…", "info");
@@ -101,6 +103,7 @@
         initEditable(detected);
         resultEl.classList.remove("hidden");
         solveBtn.classList.remove("hidden");
+        exportBtn.classList.remove("hidden");
         renderAll();
         setStatus("Grille détectée en " + ms + " ms.", "info");
       }, 0);
@@ -174,6 +177,26 @@
   }
 
   solveBtn.addEventListener("click", solve);
+
+  exportBtn.addEventListener("click", () => {
+    if (!grid) return;
+    const exportData = {
+      size: grid.size,
+      cells: grid.cells.map(row => row.map(c => ({ color: c.color }))),
+      colorMap: grid.colorMap,
+      backgroundColor: ColorUtil.toHex(grid.backgroundColor),
+      contourColor: ColorUtil.toHex(grid.contourColor),
+      detectedSymbols: symbols.map(s => ({ row: s.row, col: s.col, color: s.color })),
+      solution: null
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "grid_" + grid.size + "x" + grid.size + ".json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 
   // ---- Rendu ----
   function renderAll() {

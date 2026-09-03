@@ -204,7 +204,7 @@ const GridDetector = (() => {
   function assignColor(colorMap, rgb) {
     const lab = ColorUtil.rgbToLab(rgb[0], rgb[1], rgb[2]);
     for (let i = 0; i < colorMap.length; i++) {
-      if (ColorUtil.deltaE(lab, colorMap[i].lab) < 2) return i + 1;
+      if (ColorUtil.deltaE(lab, colorMap[i].lab) < 3) return i + 1;
     }
     colorMap.push({ lab, rgb: rgb.slice() });
     return colorMap.length;

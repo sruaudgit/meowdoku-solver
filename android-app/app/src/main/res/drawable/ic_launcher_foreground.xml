@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- grille 3x3 avec une etoile -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,28h52v52h-52z"
+        android:fillAlpha="0.0"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3" />
+    <path
+        android:fillColor="#CBA6F7"
+        android:pathData="M54,36a18,18 0 1,0 0.0001,0z"
+        android:fillAlpha="0.25" />
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M54,40 L57,48 L65,48 L58.5,53 L61,61 L54,56.5 L47,61 L49.5,53 L43,48 L51,48 Z" />
+</vector>

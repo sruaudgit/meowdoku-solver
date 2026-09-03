@@ -1,0 +1,467 @@
+Activity Resolver Table:
+  Full MIME Types:
+      image/*:
+        f3d37d0 com.meowdoku.solver/.ui.ShareReceiverActivity filter ef253c9
+          Action: "android.intent.action.SEND"
+          Category: "android.intent.category.DEFAULT"
+          StaticType: "image"
+          mPriority=0, mOrder=0, mHasStaticPartialTypes=true, mHasDynamicPartialTypes=false
+
+  Wild MIME Types:
+      image:
+        f3d37d0 com.meowdoku.solver/.ui.ShareReceiverActivity filter ef253c9
+          Action: "android.intent.action.SEND"
+          Category: "android.intent.category.DEFAULT"
+          StaticType: "image"
+          mPriority=0, mOrder=0, mHasStaticPartialTypes=true, mHasDynamicPartialTypes=false
+
+  Non-Data Actions:
+      android.intent.action.MAIN:
+        451f882 com.meowdoku.solver/.ui.MainActivity filter 72a9b93
+          Action: "android.intent.action.MAIN"
+          Category: "android.intent.category.LAUNCHER"
+
+  MIME Typed Actions:
+      android.intent.action.SEND:
+        f3d37d0 com.meowdoku.solver/.ui.ShareReceiverActivity filter ef253c9
+          Action: "android.intent.action.SEND"
+          Category: "android.intent.category.DEFAULT"
+          StaticType: "image"
+          mPriority=0, mOrder=0, mHasStaticPartialTypes=true, mHasDynamicPartialTypes=false
+
+Receiver Resolver Table:
+  Non-Data Actions:
+      android.intent.action.BATTERY_OKAY:
+        70600fc com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy filter c36385
+          Action: "android.intent.action.BATTERY_OKAY"
+          Action: "android.intent.action.BATTERY_LOW"
+      android.intent.action.ACTION_POWER_DISCONNECTED:
+        92b1ace com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy filter 2d95def
+          Action: "android.intent.action.ACTION_POWER_DISCONNECTED"
+          Action: "android.intent.action.ACTION_POWER_CONNECTED"
+      androidx.profileinstaller.action.SAVE_PROFILE:
+        4363500 com.meowdoku.solver/androidx.profileinstaller.ProfileInstallReceiver filter 143a0df
+          Action: "androidx.profileinstaller.action.SAVE_PROFILE"
+      android.intent.action.DEVICE_STORAGE_LOW:
+        96215da com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy filter 207ea0b
+          Action: "android.intent.action.DEVICE_STORAGE_LOW"
+          Action: "android.intent.action.DEVICE_STORAGE_OK"
+      android.net.conn.CONNECTIVITY_CHANGE:
+        63030e8 com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy filter cdbb301
+          Action: "android.net.conn.CONNECTIVITY_CHANGE"
+      android.intent.action.DEVICE_STORAGE_OK:
+        96215da com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy filter 207ea0b
+          Action: "android.intent.action.DEVICE_STORAGE_LOW"
+          Action: "android.intent.action.DEVICE_STORAGE_OK"
+      androidx.profileinstaller.action.INSTALL_PROFILE:
+        4363500 com.meowdoku.solver/androidx.profileinstaller.ProfileInstallReceiver filter d3ac139
+          Action: "androidx.profileinstaller.action.INSTALL_PROFILE"
+      android.intent.action.BATTERY_LOW:
+        70600fc com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy filter c36385
+          Action: "android.intent.action.BATTERY_OKAY"
+          Action: "android.intent.action.BATTERY_LOW"
+      android.intent.action.TIMEZONE_CHANGED:
+        ddbb5a6 com.meowdoku.solver/androidx.work.impl.background.systemalarm.RescheduleReceiver filter c491be7
+          Action: "android.intent.action.TIMEZONE_CHANGED"
+          Action: "android.intent.action.TIME_SET"
+          Action: "android.intent.action.BOOT_COMPLETED"
+      android.intent.action.TIME_SET:
+        ddbb5a6 com.meowdoku.solver/androidx.work.impl.background.systemalarm.RescheduleReceiver filter c491be7
+          Action: "android.intent.action.TIMEZONE_CHANGED"
+          Action: "android.intent.action.TIME_SET"
+          Action: "android.intent.action.BOOT_COMPLETED"
+      androidx.profileinstaller.action.SKIP_FILE:
+        4363500 com.meowdoku.solver/androidx.profileinstaller.ProfileInstallReceiver filter 3f9d37e
+          Action: "androidx.profileinstaller.action.SKIP_FILE"
+      androidx.profileinstaller.action.BENCHMARK_OPERATION:
+        4363500 com.meowdoku.solver/androidx.profileinstaller.ProfileInstallReceiver filter 49a12c
+          Action: "androidx.profileinstaller.action.BENCHMARK_OPERATION"
+      android.intent.action.BOOT_COMPLETED:
+        ddbb5a6 com.meowdoku.solver/androidx.work.impl.background.systemalarm.RescheduleReceiver filter c491be7
+          Action: "android.intent.action.TIMEZONE_CHANGED"
+          Action: "android.intent.action.TIME_SET"
+          Action: "android.intent.action.BOOT_COMPLETED"
+      android.intent.action.ACTION_POWER_CONNECTED:
+        92b1ace com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy filter 2d95def
+          Action: "android.intent.action.ACTION_POWER_DISCONNECTED"
+          Action: "android.intent.action.ACTION_POWER_CONNECTED"
+      androidx.work.diagnostics.REQUEST_DIAGNOSTICS:
+        6fd8632 com.meowdoku.solver/androidx.work.impl.diagnostics.DiagnosticsReceiver filter 5818f83
+          Action: "androidx.work.diagnostics.REQUEST_DIAGNOSTICS"
+      androidx.work.impl.background.systemalarm.UpdateProxies:
+        d4b7394 com.meowdoku.solver/androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver filter ecf7e3d
+          Action: "androidx.work.impl.background.systemalarm.UpdateProxies"
+
+Domain verification status:
+
+Permissions:
+  Permission [com.meowdoku.solver.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION] (ab9f1b3):
+    sourcePackage=com.meowdoku.solver
+    uid=10636 gids=[] type=0 prot=signature
+    perm=PermissionInfo{b1a41fd com.meowdoku.solver.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION}
+    flags=0x0
+
+Registered ContentProviders:
+  com.meowdoku.solver/androidx.core.content.FileProvider:
+    Provider{f75ef2 com.meowdoku.solver/androidx.core.content.FileProvider}
+  com.meowdoku.solver/androidx.startup.InitializationProvider:
+    Provider{96d5943 com.meowdoku.solver/androidx.startup.InitializationProvider}
+
+ContentProvider Authorities:
+  [com.meowdoku.solver.androidx-startup]:
+    Provider{96d5943 com.meowdoku.solver/androidx.startup.InitializationProvider}
+      applicationInfo=ApplicationInfo{c42a370 com.meowdoku.solver}
+  [com.meowdoku.solver.fileprovider]:
+    Provider{f75ef2 com.meowdoku.solver/androidx.core.content.FileProvider}
+      applicationInfo=ApplicationInfo{ecbe6e9 com.meowdoku.solver}
+
+Key Set Manager:
+  [com.meowdoku.solver]
+      Signing KeySets: 94
+
+Packages:
+  Package [com.meowdoku.solver] (31f1f4d):
+    appId=10636
+    pkg=Package{498783e com.meowdoku.solver}
+    codePath=/data/app/~~vtWVxI1-J-HKb9Bq11-c2A==/com.meowdoku.solver-Bc-WxzNfzBGBOc7QeVj01w==
+    resourcePath=/data/app/~~vtWVxI1-J-HKb9Bq11-c2A==/com.meowdoku.solver-Bc-WxzNfzBGBOc7QeVj01w==
+    legacyNativeLibraryDir=/data/app/~~vtWVxI1-J-HKb9Bq11-c2A==/com.meowdoku.solver-Bc-WxzNfzBGBOc7QeVj01w==/lib
+    extractNativeLibs=false
+    primaryCpuAbi=null
+    secondaryCpuAbi=null
+    cpuAbiOverride=null
+    versionCode=1 minSdk=26 targetSdk=34
+    minExtensionVersions=[]
+    versionName=1.0
+    hiddenApiEnforcementPolicy=2
+    usesNonSdkApi=false
+    splits=[base]
+    apkSigningVersion=2
+    flags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PARTIALLY_DIRECT_BOOT_AWARE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    forceQueryable=false
+    pageSizeCompat=0
+    scannedAsStoppedSystemApp=false
+    supportsScreens=[small, medium, large, xlarge, resizeable, anyDensity]
+    timeStamp=2026-09-03 15:30:48
+    lastUpdateTime=2026-09-03 15:30:53
+    installerPackageName=null
+    installerPackageUid=-1
+    initiatingPackageName=com.android.shell
+    originatingPackageName=null
+    category=manifest: -1, override: -1, by user: -1
+    packageSource=1
+    appMetadataFilePath=null
+    appMetadataSource=0
+    signatures=PackageSignatures{782469f version:2, signatures:[bf87c9d3], past signatures:[]}
+    installPermissionsFixed=false
+    pkgFlags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+    privatePkgFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PARTIALLY_DIRECT_BOOT_AWARE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    apexModuleName=null
+    componentsDeclared=10
+    declared permissions:
+      com.meowdoku.solver.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: prot=signature
+    requested permissions:
+      android.permission.POST_NOTIFICATIONS
+      android.permission.FOREGROUND_SERVICE
+      android.permission.RECEIVE_BOOT_COMPLETED
+      com.meowdoku.solver.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+      android.permission.FOREGROUND_SERVICE_DATA_SYNC
+      android.permission.ACCESS_NETWORK_STATE
+      android.permission.WAKE_LOCK
+    install permissions:
+      android.permission.FOREGROUND_SERVICE: granted=true
+      android.permission.RECEIVE_BOOT_COMPLETED: granted=true
+      com.meowdoku.solver.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+      android.permission.FOREGROUND_SERVICE_DATA_SYNC: granted=true
+      android.permission.ACCESS_NETWORK_STATE: granted=true
+      android.permission.WAKE_LOCK: granted=true
+    User 0: ceDataInode=784214 deDataInode=1142566 installed=true hidden=false suspended=false distractionFlags=0 stopped=true notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=/data/user/0/com.meowdoku.solver
+      firstInstallTime=2026-09-03 15:01:12
+      uninstallReason=0
+      overlay paths:
+        /product/overlay/NavigationBarModeGestural/NavigationBarModeGesturalOverlay.apk
+      legacy overlay paths:
+        /product/overlay/NavigationBarModeGestural/NavigationBarModeGesturalOverlay.apk
+      runtime permissions:
+        android.permission.POST_NOTIFICATIONS: granted=true, flags=[ USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+      enabledComponents:
+        androidx.work.impl.background.systemalarm.RescheduleReceiver
+        androidx.work.impl.background.systemjob.SystemJobService
+    User 95: ceDataInode=1140169 deDataInode=1130782 installed=true hidden=false suspended=false distractionFlags=0 stopped=true notLaunched=true enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=/data/user/95/com.meowdoku.solver
+      firstInstallTime=2026-09-03 15:01:12
+      uninstallReason=0
+      runtime permissions:
+        android.permission.POST_NOTIFICATIONS: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+
+Queries:
+  system apps queryable: false
+  queries via forceQueryable:
+  queries via package name:
+  queries via component:
+    com.samsung.android.bixby.agent:
+      com.meowdoku.solver
+    com.microsoft.skydrive:
+      com.meowdoku.solver
+    com.android.settings.intelligence:
+      com.meowdoku.solver
+    com.google.android.as:
+      com.meowdoku.solver
+    com.google.android.as.oss:
+      com.meowdoku.solver
+    com.oakever.meowdoku:
+      com.meowdoku.solver
+    com.google.android.apps.maps:
+      com.meowdoku.solver
+    pi.browser:
+      com.meowdoku.solver
+    com.google.android.apps.photos:
+      com.meowdoku.solver
+    com.whatsapp:
+      com.meowdoku.solver
+    com.snapchat.android:
+      com.meowdoku.solver
+    com.openai.chatgpt:
+      com.meowdoku.solver
+    com.instagram.android:
+      com.meowdoku.solver
+    com.blockchainvault:
+      com.meowdoku.solver
+    app.revanced.android.photos:
+      com.meowdoku.solver
+    com.teslamotors.tesla:
+      com.meowdoku.solver
+    air.com.unit9.bkFrApp:
+      com.meowdoku.solver
+    com.amazon.mShop.android.shopping:
+      com.meowdoku.solver
+    com.revolut.revolut:
+      com.meowdoku.solver
+    video.downloader.nowatermark:
+      com.meowdoku.solver
+    instagram.video.downloader.story.saver.ig:
+      com.meowdoku.solver
+    com.microsoft.office.outlook:
+      com.meowdoku.solver
+    tt.video.downloader.saver.withoutwatermark.tmate.snaptik:
+      com.meowdoku.solver
+    com.wakdev.wdnfc:
+      com.meowdoku.solver
+    deezer.android.app:
+      com.meowdoku.solver
+    com.mcu.reolink:
+      com.meowdoku.solver
+    net.typeblog.shelter:
+      com.meowdoku.solver
+    com.amazon.clouddrive.photos:
+      com.meowdoku.solver
+    fr.matmut.app.mamatmut:
+      com.meowdoku.solver
+    com.tiktok.video.downloader.no.watermark.tk:
+      com.meowdoku.solver
+    com.kimcy929.secretvideorecorder:
+      com.meowdoku.solver
+    photocollage.photoeditor.collagemaker:
+      com.meowdoku.solver
+    com.microsoft.designer:
+      com.meowdoku.solver
+    com.zhiliaoapp.musically:
+      com.meowdoku.solver
+    energy.octopus.electricjuice.android:
+      com.meowdoku.solver
+    com.wireguard.android:
+      com.meowdoku.solver
+    dev.niamor.freeboxremote:
+      com.meowdoku.solver
+    com.ebay.mobile:
+      com.meowdoku.solver
+    fr.vsct.compagnonpro.android:
+      com.meowdoku.solver
+    com.xiaomi.smarthome:
+      com.meowdoku.solver
+    com.l:
+      com.meowdoku.solver
+    com.dropbox.android:
+      com.meowdoku.solver
+    livio.pack.lang.fr_FR:
+      com.meowdoku.solver
+    com.intsig.camscanner:
+      com.meowdoku.solver
+    com.grymala.photoscannerpdftrial:
+      com.meowdoku.solver
+    com.revolut.revolutx:
+      com.meowdoku.solver
+    com.facebook.lite:
+      com.meowdoku.solver
+    com.facebook.litf:
+      com.meowdoku.solver
+    me.fapp.formula:
+      com.meowdoku.solver
+    be.rtbf.auvio:
+      com.meowdoku.solver
+    com.joyal.swyplauncher:
+      com.meowdoku.solver
+    com.ecffri.arrows:
+      com.meowdoku.solver
+    cc.relive.reliveapp:
+      com.meowdoku.solver
+    com.apkpure.aegon:
+      com.meowdoku.solver
+  queryable via interaction:
+    User 0:
+      [com.android.inputdevices,com.samsung.android.brightnessbackupservice,com.samsung.android.camerasdkservice,com.samsung.android.stickercenter,com.samsung.android.knox.zt.framework,com.samsung.android.knox.mpos,com.sec.android.app.RilPhoneNumberService,com.sec.android.app.servicemodeapp,com.sec.sve,com.samsung.android.hdmapp,com.samsung.android.providers.factory,com.sec.app.RilErrorNotifier,com.sem.factoryapp,com.sec.bcservice,com.android.location.fused,com.samsung.android.svcagent,com.sec.automation,com.samsung.android.dqagent,com.android.localtransport,com.samsung.android.lool,com.sec.facatfunction,com.sec.android.app.desktoplauncher,android,com.sec.modem.settings,com.samsung.android.da.daagent,com.sec.android.app.parser,com.samsung.SMT,com.samsung.aasaservice,com.samsung.android.aircommandmanager,com.sec.android.smartfpsadjuster,com.samsung.android.simagent,com.samsung.android.themecenter,com.samsung.android.app.dressroom,com.samsung.android.knox.pushmanager,com.samsung.android.cameraxservice,com.sec.factory.camera,com.android.server.telecom,com.samsung.accessibility,com.sec.imsservice,com.sec.android.sdhms,com.android.keychain,com.sec.android.CcInfo,com.sec.android.app.wlantest,com.sec.android.app.hwmoduletest,com.sec.android.emergencylauncher,com.samsung.android.smartswitchassistant,com.samsung.oda.service,com.samsung.android.app.omcagent,com.sec.android.app.quicktool,com.samsung.android.provider.filterprovider,com.samsung.android.bbc.bbcagent,com.samsung.android.emergency,com.sec.usbsettings,com.samsung.gpuwatchapp,com.sec.mhs.smarttethering,com.samsung.android.vexfwk.service,com.android.settings,com.android.dynsystem,com.android.providers.settings,com.samsung.android.forest,com.samsung.sait.sohservice,com.samsung.android.ese,com.samsung.android.bixby.wakeup,com.sec.epdg,com.sec.android.app.factorykeystring,com.samsung.android.photoremasterservice,com.samsung.android.globalpostprocmgr,com.sec.imslogger,com.samsung.android.mdecservice,com.sec.android.diagmonagent,com.wssyncmldm,com.skms.android.agent,com.samsung.android.knox.attestation,com.sec.android.app.SecSetupWizard,com.samsung.android.smartface,com.qti.snapdragon.qdcm_ff,com.sec.android.soagent,com.samsung.android.wifi.ai,com.samsung.android.motionphoto.app,com.sec.android.iaft,com.qualcomm.qti.services.systemhelper,com.samsung.android.fmm,com.samsung.android.vtcamerasettings,com.sec.android.app.personalization,com.samsung.android.biometrics.app.setting]:
+        com.meowdoku.solver
+      [com.samsung.android.app.aodservice,com.android.systemui,com.samsung.android.app.routines]:
+        com.meowdoku.solver
+      com.samsung.android.game.gamehome:
+        com.meowdoku.solver
+      com.sec.android.app.launcher:
+        com.meowdoku.solver
+      com.microsoft.appmanager:
+        com.meowdoku.solver
+      com.google.android.providers.media.module:
+        com.meowdoku.solver
+      nodomain.freeyourgadget.gadgetbridge.nightly:
+        com.meowdoku.solver
+      com.huawei.health:
+        com.meowdoku.solver
+      org.kde.kdeconnect_tp:
+        com.meowdoku.solver
+      com.meowdoku.solver:
+        [com.android.inputdevices,com.samsung.android.brightnessbackupservice,com.samsung.android.camerasdkservice,com.samsung.android.stickercenter,com.samsung.android.knox.zt.framework,com.samsung.android.knox.mpos,com.sec.android.app.RilPhoneNumberService,com.sec.android.app.servicemodeapp,com.sec.sve,com.samsung.android.hdmapp,com.samsung.android.providers.factory,com.sec.app.RilErrorNotifier,com.sem.factoryapp,com.sec.bcservice,com.android.location.fused,com.samsung.android.svcagent,com.sec.automation,com.samsung.android.dqagent,com.android.localtransport,com.samsung.android.lool,com.sec.facatfunction,com.sec.android.app.desktoplauncher,android,com.sec.modem.settings,com.samsung.android.da.daagent,com.sec.android.app.parser,com.samsung.SMT,com.samsung.aasaservice,com.samsung.android.aircommandmanager,com.sec.android.smartfpsadjuster,com.samsung.android.simagent,com.samsung.android.themecenter,com.samsung.android.app.dressroom,com.samsung.android.knox.pushmanager,com.samsung.android.cameraxservice,com.sec.factory.camera,com.android.server.telecom,com.samsung.accessibility,com.sec.imsservice,com.sec.android.sdhms,com.android.keychain,com.sec.android.CcInfo,com.sec.android.app.wlantest,com.sec.android.app.hwmoduletest,com.sec.android.emergencylauncher,com.samsung.android.smartswitchassistant,com.samsung.oda.service,com.samsung.android.app.omcagent,com.sec.android.app.quicktool,com.samsung.android.provider.filterprovider,com.samsung.android.bbc.bbcagent,com.samsung.android.emergency,com.sec.usbsettings,com.samsung.gpuwatchapp,com.sec.mhs.smarttethering,com.samsung.android.vexfwk.service,com.android.settings,com.android.dynsystem,com.android.providers.settings,com.samsung.android.forest,com.samsung.sait.sohservice,com.samsung.android.ese,com.samsung.android.bixby.wakeup,com.sec.epdg,com.sec.android.app.factorykeystring,com.samsung.android.photoremasterservice,com.samsung.android.globalpostprocmgr,com.sec.imslogger,com.samsung.android.mdecservice,com.sec.android.diagmonagent,com.wssyncmldm,com.skms.android.agent,com.samsung.android.knox.attestation,com.sec.android.app.SecSetupWizard,com.samsung.android.smartface,com.qti.snapdragon.qdcm_ff,com.sec.android.soagent,com.samsung.android.wifi.ai,com.samsung.android.motionphoto.app,com.sec.android.iaft,com.qualcomm.qti.services.systemhelper,com.samsung.android.fmm,com.samsung.android.vtcamerasettings,com.sec.android.app.personalization,com.samsung.android.biometrics.app.setting]
+        com.google.android.providers.media.module
+      [com.android.inputdevices,com.samsung.android.brightnessbackupservice,com.samsung.android.camerasdkservice,com.samsung.android.stickercenter,com.samsung.android.knox.zt.framework,com.samsung.android.knox.mpos,com.sec.android.app.RilPhoneNumberService,com.sec.android.app.servicemodeapp,com.sec.sve,com.samsung.android.hdmapp,com.samsung.android.providers.factory,com.sec.app.RilErrorNotifier,com.sem.factoryapp,com.sec.bcservice,com.android.location.fused,com.samsung.android.svcagent,com.sec.automation,com.samsung.android.dqagent,com.android.localtransport,com.samsung.android.lool,com.sec.facatfunction,com.sec.android.app.desktoplauncher,android,com.sec.modem.settings,com.samsung.android.da.daagent,com.sec.android.app.parser,com.samsung.SMT,com.samsung.aasaservice,com.samsung.android.aircommandmanager,com.sec.android.smartfpsadjuster,com.samsung.android.simagent,com.samsung.android.themecenter,com.samsung.android.app.dressroom,com.samsung.android.knox.pushmanager,com.samsung.android.cameraxservice,com.sec.factory.camera,com.android.server.telecom,com.samsung.accessibility,com.sec.imsservice,com.sec.android.sdhms,com.android.keychain,com.sec.android.CcInfo,com.sec.android.app.wlantest,com.sec.android.app.hwmoduletest,com.sec.android.emergencylauncher,com.samsung.android.smartswitchassistant,com.samsung.oda.service,com.samsung.android.app.omcagent,com.sec.android.app.quicktool,com.samsung.android.provider.filterprovider,com.samsung.android.bbc.bbcagent,com.samsung.android.emergency,com.sec.usbsettings,com.samsung.gpuwatchapp,com.sec.mhs.smarttethering,com.samsung.android.vexfwk.service,com.android.settings,com.android.dynsystem,com.android.providers.settings,com.samsung.android.forest,com.samsung.sait.sohservice,com.samsung.android.ese,com.samsung.android.bixby.wakeup,com.sec.epdg,com.sec.android.app.factorykeystring,com.samsung.android.photoremasterservice,com.samsung.android.globalpostprocmgr,com.sec.imslogger,com.samsung.android.mdecservice,com.sec.android.diagmonagent,com.wssyncmldm,com.skms.android.agent,com.samsung.android.knox.attestation,com.sec.android.app.SecSetupWizard,com.samsung.android.smartface,com.qti.snapdragon.qdcm_ff,com.sec.android.soagent,com.samsung.android.wifi.ai,com.samsung.android.motionphoto.app,com.sec.android.iaft,com.qualcomm.qti.services.systemhelper,com.samsung.android.fmm,com.samsung.android.vtcamerasettings,com.sec.android.app.personalization,com.samsung.android.biometrics.app.setting]:
+        com.meowdoku.solver
+    User 95:
+  queryable via uses-library:
+
+Dexopt state:
+  [com.meowdoku.solver]
+    path: /data/app/~~vtWVxI1-J-HKb9Bq11-c2A==/com.meowdoku.solver-Bc-WxzNfzBGBOc7QeVj01w==/base.apk
+      arm64: [status=run-from-apk] [reason=unknown] [primary-abi]
+        [location is error]
+
+SPEG state:
+  Event #11: 17-08-2026 22:21:36.017 Failure com.apkpure.aegon took 3228 ms
+  Event #10: 16-07-2026 19:43:37.766 Success dev.guber.waze_alerts took 2320 ms
+  Event #9: 25-06-2026 23:16:50.401 Success com.chimbori.hermitcrab.premium.unlocker took 2354 ms
+  Event #8: 18-06-2026 19:01:35.300 Success com.trampolinetales.wtp took 3082 ms
+  Event #7: 02-05-2026 15:05:48.322 Success com.joyal.swyplauncher took 2883 ms
+  Event #6: 01-05-2026 22:29:30.929 Success de.markusfisch.android.pielauncher took 2359 ms
+  Event #5: 16-04-2026 17:40:46.803 Success com.agilexrobotict took 2537 ms
+  Event #4: 21-02-2026 14:53:26.653 Success com.bluberry.aircast took 2241 ms
+  Event #3: 21-02-2026 14:37:06.194 Success com.samueljhuf.upnp_explorer took 2289 ms
+  Event #2: 21-02-2026 14:25:01.449 Failure de.yaacc took 3413 ms
+  Event #1: 15-02-2026 23:14:24.965 Success jp.nonbili.noutube took 2431 ms
+  Event #0: 30-12-2025 22:43:37.118 Success s251mk.p230zr.me07o.h2w1j took 3060 ms
+
+Profile utilization state:
+  Current state:
+    Version: 2.1.1
+    Start reason: boot-no-update
+    Start time: not started
+    Finish time: not finished
+    PU_StatusWatcher:
+      Initial thermal status: 0
+      Thermal status: 0
+      Screen off: false
+      Low battery: true
+    PU_DexoptTrigger:
+      Dexopt concurrency: 4
+      Dexopting: false
+    PU_Storage:
+      Stored apps:
+        org.telegram.group 89
+        com.sec.android.app.camera 95
+        io.homeassistant.companion.android 97
+        com.brave.browser 99
+        com.google.android.googlequicksearchbox 101
+        org.kde.kdeconnect_tp 113
+        com.google.android.gm 114
+        com.teslamotors.tesla 116
+        com.tplink.iot 119
+        money.boku.android 121
+        com.android.settings 126
+        com.blockchainvault 127
+        com.facebook.lite 130
+        com.huawei.health 130
+        me.proton.android.drive 131
+        com.samsung.android.calendar 137
+        com.microsoft.office.outlook 142
+        com.linkedin.android 144
+        com.samsung.android.messaging 144
+        com.android.vending 145
+        com.dealabs.apps.android 148
+        com.google.android.youtube 148
+        com.orange.mysosh 151
+        com.samsung.android.app.contacts 152
+        com.nisargjhaveri.netspeed 159
+        com.google.android.calendar 166
+        com.google.android.apps.magazines 168
+        com.google.android.apps.youtube.music 171
+        net.bnpparibas.mescomptes 172
+        com.samsung.android.dialer 175
+        com.google.android.apps.tachyon 184
+        com.sec.android.easyMover 184
+        com.joyal.swyplauncher 190
+        com.google.android.apps.tasks 202
+    Stored PU state:
+      Service:
+        Version: 2.1.1
+        Start reason: boot-after-mainline-update
+        Start time: Sat Aug 15 04:03:04 GMT+02:00 2026 ts=1786759384732
+        Finish time: Sat Aug 15 04:39:52 GMT+02:00 2026 ts=1786761592241
+        Took time 2207sec
+      Watcher:
+        Initial thermal status: 0
+        Thermal status: 0
+        Screen off: true
+        Low battery: false
+      Metrics:
+        Predicted and launched apps: 0
+        Predicted apps: 23
+        Launched apps: 0
+        Best f1Score: 0.0, prefixCount: 0, precision: 0.0, recall: 0.0
+      Trigger:
+        Dexopt concurrency: 4
+        Dexopting: false
+        Hot apps list:
+          org.telegram.group, w=89, s=OPTIMIZED, optTimeMs=1786759402956, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=12444, filter=speed-profile]
+          com.sec.android.app.camera, w=95, s=OPTIMIZED, optTimeMs=1786759390535, cancelCount=0, dexopt=SKIPPED, [primaryDex=true, reason=boot-after-mainline-update, dex2oatTimeMs=0, filter=speed-profile]
+          io.homeassistant.companion.android, w=97, s=OPTIMIZED, optTimeMs=1786759402874, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=12279, filter=speed-profile]
+          com.brave.browser, w=99, s=OPTIMIZED, optTimeMs=1786759396410, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=1867, filter=speed-profile], [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=3703, filter=speed-profile], [primaryDex=true, reason=vdex-dm, dex2oatTimeMs=0, filter=verify]
+          com.google.android.googlequicksearchbox, w=101, s=OPTIMIZED, optTimeMs=1786759501744, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=23247, filter=speed-profile]
+          org.kde.kdeconnect_tp, w=113, s=OPTIMIZED, optTimeMs=1786759399784, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=3191, filter=speed-profile]
+          com.google.android.gm, w=114, s=OPTIMIZED, optTimeMs=1786759561598, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=14908, filter=speed-profile]
+          com.teslamotors.tesla, w=116, s=OPTIMIZED, optTimeMs=1786759600142, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=19882, filter=speed-profile]
+          com.tplink.iot, w=119, s=OPTIMIZED, optTimeMs=1786759600260, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=19693, filter=speed-profile], [primaryDex=true, reason=vdex-dm, dex2oatTimeMs=0, filter=verify]
+          money.boku.android, w=121, s=OPTIMIZED, optTimeMs=1786759595403, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=4316, filter=speed-profile]
+          com.android.settings, w=126, s=OPTIMIZED, optTimeMs=1786759597331, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=4865, filter=speed-profile]
+          com.blockchainvault, w=127, s=OPTIMIZED, optTimeMs=1786759681460, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=10758, filter=speed-profile]
+          com.facebook.lite, w=130, s=OPTIMIZED, optTimeMs=1786759600355, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=2339, filter=speed-profile]
+          com.huawei.health, w=130, s=OPTIMIZED, optTimeMs=1786761568927, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=27839, filter=speed-profile]
+          me.proton.android.drive, w=131, s=OPTIMIZED, optTimeMs=1786761553425, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=12383, filter=speed-profile]
+          com.samsung.android.calendar, w=137, s=OPTIMIZED, optTimeMs=1786760039609, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=7560, filter=speed-profile]
+          com.microsoft.office.outlook, w=142, s=OPTIMIZED, optTimeMs=1786761578431, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=29800, filter=speed-profile]
+          com.linkedin.android, w=144, s=OPTIMIZED, optTimeMs=1786761578420, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=28068, filter=speed-profile]
+          com.samsung.android.messaging, w=144, s=OPTIMIZED, optTimeMs=1786761553561, cancelCount=0, dexopt=SKIPPED, [primaryDex=true, reason=boot-after-mainline-update, dex2oatTimeMs=0, filter=speed-profile]
+          com.android.vending, w=145, s=OPTIMIZED, optTimeMs=1786761577337, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=21650, filter=speed-profile]
+          com.dealabs.apps.android, w=148, s=OPTIMIZED, optTimeMs=1786761585753, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=16086, filter=speed-profile]
+          com.google.android.youtube, w=148, s=OPTIMIZED, optTimeMs=1786761592241, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=14605, filter=speed-profile]
+          com.orange.mysosh, w=151, s=OPTIMIZED, optTimeMs=1786761590068, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=11458, filter=speed-profile]
+    Stored SCPM state:
+      packages-9a07:
+        [                                            ]
+      disable-2bb4:
+        [                                            ]
+
+Compiler stats:
+  [com.meowdoku.solver]
+    (No recorded stats)
+
+HeimdAllFS state:
+  HeimdAllFS does not supported.
