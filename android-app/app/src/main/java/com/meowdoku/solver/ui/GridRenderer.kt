@@ -52,27 +52,21 @@ object GridRenderer {
             }
         }
 
-        // Dessine les symboles de solution
-        val starSize = cellSize * 0.45f
-        val symbolPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            textAlign = Paint.Align.CENTER
-            textSize = starSize
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        // Dessine les symboles de solution : un disque noir centré dans la case
+        val diskRadius = cellSize * 0.3f
+        val diskPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
         }
-        val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val diskShadow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.argb(110, 0, 0, 0)
-            textAlign = Paint.Align.CENTER
-            textSize = starSize
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
         }
 
         for (s in solution) {
             val cx = (s.col + 0.5f) * cellSize
             val cy = (s.row + 0.5f) * cellSize
-            val base = starSize * 0.62f
-            canvas.drawText("\u2605", cx, cy + base, shadowPaint)
-            canvas.drawText("\u2605", cx, cy + base - starSize * 0.05f, symbolPaint)
+            val shadowOffset = cellSize * 0.05f
+            canvas.drawCircle(cx + shadowOffset, cy + shadowOffset, diskRadius, diskShadow)
+            canvas.drawCircle(cx, cy, diskRadius, diskPaint)
         }
 
         return bmp

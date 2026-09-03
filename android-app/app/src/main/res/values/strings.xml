@@ -4,7 +4,10 @@
     <string name="channel_name">Solutions Meowdoku</string>
     <string name="channel_description">Notifications des grilles Meowdoku résolues</string>
     <string name="notification_title">Grille Meowdoku résolue</string>
-    <string name="notification_text">Touchez pour voir la grille résolue en plein écran</string>
+    <string name="notification_text">Touchez pour afficher la grille résolue en superposition</string>
+    <string name="notification_action_fullscreen">Afficher en plein écran</string>
+    <string name="overlay_close">Fermer la superposition</string>
+    <string name="overlay_permission_required">Autorisation nécessaire pour afficher par-dessus d\'autres applications.</string>
     <string name="notification_error">Échec de l\'analyse</string>
     <string name="analyzing">Analyse de la grille en cours…</string>
     <string name="solution_desc">Grille Meowdoku résolue</string>

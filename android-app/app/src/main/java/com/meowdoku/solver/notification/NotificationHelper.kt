@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory
 import androidx.core.app.NotificationCompat
 import com.meowdoku.solver.MeowdokuApp
 import com.meowdoku.solver.R
+import com.meowdoku.solver.service.OverlayService
 import com.meowdoku.solver.ui.SolutionActivity
 
 /**
@@ -32,14 +33,24 @@ object NotificationHelper {
 
         val fullSize = BitmapFactory.decodeFile(solutionPath)
 
-        // PendingIntent qui ouvre SolutionActivity
-        val openIntent = Intent(context, SolutionActivity::class.java)
-            .putExtra(SolutionActivity.EXTRA_IMAGE_PATH, solutionPath)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = PendingIntent.getActivity(
+        // Tap sur la notification : affiche la grille en fenêtre flottante (overlay).
+        val overlayIntent = Intent(context, OverlayService::class.java)
+            .putExtra(OverlayService.EXTRA_IMAGE_PATH, solutionPath)
+        val pendingIntent = PendingIntent.getService(
             context,
             0,
-            openIntent,
+            overlayIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Action "Afficher en plein écran" : ouvre SolutionActivity.
+        val fullscreenIntent = Intent(context, SolutionActivity::class.java)
+            .putExtra(SolutionActivity.EXTRA_IMAGE_PATH, solutionPath)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val fullscreenPendingIntent = PendingIntent.getActivity(
+            context,
+            1,
+            fullscreenIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -49,6 +60,11 @@ object NotificationHelper {
             .setContentText(text)
             .setLargeIcon(largeIcon)
             .setContentIntent(pendingIntent)
+            .addAction(
+                0,
+                context.getString(R.string.notification_action_fullscreen),
+                fullscreenPendingIntent
+            )
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
