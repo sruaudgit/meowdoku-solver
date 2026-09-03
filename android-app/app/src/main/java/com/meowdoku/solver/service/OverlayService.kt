@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
  *
  * La fenêtre est créée depuis un Service (et non une Activity) pour que
  * l'application en dessous reste l'app de premier plan et continue de recevoir
- * les clics. Seule la surface de la grille capture les touches (drag / pincement),
+ * les clics. Seule la surface de la grille capture les touches (drag),
  * le reste est transparent au toucher grâce à FLAG_NOT_TOUCH_MODAL.
  */
 class OverlayService : Service() {
@@ -42,6 +42,7 @@ class OverlayService : Service() {
     private var rootViewWidth = 0
     private var rootViewHeight = 0
     private var bitmap: Bitmap? = null
+    private var currentImagePath: String? = null
 
     // État du drag (suivi en coordonnées absolues)
     private var dragging = false
@@ -67,6 +68,7 @@ class OverlayService : Service() {
             return START_NOT_STICKY
         }
         bitmap = loaded
+        currentImagePath = path
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
@@ -75,6 +77,15 @@ class OverlayService : Service() {
         rootView!!.findViewById<ImageView>(R.id.overlayImage).setImageBitmap(loaded)
 
         rootView!!.findViewById<View>(R.id.overlayClose).setOnClickListener { dismiss() }
+
+        rootView!!.findViewById<View>(R.id.overlayFullscreen).setOnClickListener {
+            val imagePath = currentImagePath ?: return@setOnClickListener
+            dismiss()
+            val intent = Intent(this, com.meowdoku.solver.ui.SolutionActivity::class.java)
+                .putExtra(com.meowdoku.solver.ui.SolutionActivity.EXTRA_IMAGE_PATH, imagePath)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
 
         params = buildLayoutParams()
         try {

@@ -14,7 +14,7 @@ Le solver analyse une capture d'écran du jeu et résout la grille en respectant
 
 1. **Détection** — L'image est analysée pour localiser la grille, identifier les lignes/colonnes de contour, puis associer à chaque case sa couleur (via clustering CIELAB / Delta E)
 2. **Résolution** — Un solveur CSP (backtracking ligne par ligne) place un symbole par ligne en respectant les contraintes colonne, couleur et voisinage
-3. **Rendu** — La solution est superposée sur l'image originale avec des étoiles (★) aux positions des symboles
+3. **Rendu** — La solution est superposée sur l'image originale, avec des étoiles (★) aux positions des symboles (app web) ou des disques noirs (app Android)
 
 ## Application Web
 
@@ -49,7 +49,8 @@ Application Kotlin native (pas de WebView). Compatible Android API 26+.
 2. Le `ShareReceiverActivity` copie l'image et lance le `SolveService`
 3. Le `SolveService` (foreground service) exécute le pipeline : détection → résolution → rendu → notification
 4. Une notification avec vignette de la solution apparaît
-5. Le clic ouvre la solution en plein écran
+5. Le clic ouvre la solution en **superposition** (overlay) par-dessus le jeu, grâce au `OverlayService`
+6. Depuis l'overlay, on peut fermer (×), déplacer (drag), ou basculer en **plein écran** (bouton en haut à gauche) ; le bouton plein écran masque l'overlay, et un bouton dans le plein écran permet de revenir en overlay
 
 ### Structure
 
@@ -64,6 +65,7 @@ app/src/main/java/com/meowdoku/solver/
     GridSolver.kt              — Solveur CSP backtracking (port fidèle de solver.js)
   service/
     SolveService.kt            — ForegroundService dédié (pipeline complet)
+    OverlayService.kt          — Overlay flottant (chat head) : fermeture, drag, plein écran
   ui/
     MainActivity.kt            — Écran d'accueil
     ShareReceiverActivity.kt   — Réception du partage d'image
@@ -92,6 +94,7 @@ L'APK de debug est généré dans `app/build/outputs/apk/debug/`.
 
 - `POST_NOTIFICATIONS` — afficher la notification de solution
 - `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_DATA_SYNC` — maintenir le calcul actif en arrière-plan
+- `SYSTEM_ALERT_WINDOW` — afficher l'overlay de solution par-dessus les autres applications
 
 ## Tests
 

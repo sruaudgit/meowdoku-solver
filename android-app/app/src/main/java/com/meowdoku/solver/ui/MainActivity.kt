@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
                 "2. Depuis votre galerie photo, ouvrez l'image et choisissez \"Partager\".\n" +
                 "3. Sélectionnez Meowdoku Solver dans la liste des applications.\n\n" +
                 "Une notification s'affichera alors avec une image de la grille résolue.\n" +
-                "Touchez la notification pour voir la solution en plein écran."
+                "Touchez la notification pour voir la solution en superposition par-dessus le jeu."
             textSize = 15f
             setTextColor(getColor(R.color.white))
             setLineSpacing(0f, 1.3f)
