@@ -44,6 +44,8 @@ Répertoire : `android-app/`
 
 Application Kotlin native (pas de WebView). Compatible Android API 26+.
 
+<img src="file:///C:/Users/notre/Documents/Code/web/meowdoku-solver/imgs/Screenshot.jpg" title="" alt="Screenshot.jpg" width="257">
+
 ### Fonctionnement
 
 1. L'utilisateur partage une capture d'écran vers l'app Meowdoku Solver (via le menu de partage Android)
@@ -143,7 +145,5 @@ Le solver explore les lignes une par une (backtracking). Pour chaque ligne, il e
 - Aucun symbole adjacent (8-voisinage)
 
 L'heuristique MRV (Most Values Remaining) trie les lignes par nombre de candidats décroissant pour accélérer l'exploration.
-
-
 
 Réalisé avec l'aide d'OpenCode et BigPickle.
