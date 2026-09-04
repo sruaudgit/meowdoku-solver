@@ -21,6 +21,7 @@ Le solver analyse une capture d'écran du jeu et résout la grille en respectant
 Fichier d'entrée : `index.html`
 
 Ouvrir dans un navigateur, puis :
+
 - Glisser-déposer ou charger un fichier `.jpg` (capture du jeu)
 - La grille est automatiquement détectée et affichée
 - Cliquer **Résoudre** pour calculer la solution
@@ -142,3 +143,7 @@ Le solver explore les lignes une par une (backtracking). Pour chaque ligne, il e
 - Aucun symbole adjacent (8-voisinage)
 
 L'heuristique MRV (Most Values Remaining) trie les lignes par nombre de candidats décroissant pour accélérer l'exploration.
+
+
+
+Réalisé avec l'aide d'OpenCode et BigPickle.
