@@ -93,11 +93,15 @@
     solveBtn.classList.add("hidden");
     exportBtn.classList.add("hidden");
 
-    try {
-      setStatus("Analyse de la grille en cours…", "info");
-      const start = performance.now();
-      // Laisse le navigateur peindre le message avant le calcul synchrone.
-      setTimeout(() => {
+    setStatus("Analyse de la grille en cours…", "info");
+    const start = performance.now();
+    // Laisse le navigateur peindre le message avant le calcul synchrone.
+    // Le try/catch est placé DANS le callback : sinon les erreurs synchrones
+    // levées par GridDetector.detect() (exécuté de façon asynchrone via
+    // setTimeout) échapperaient au try/catch externe et atterriraient dans la
+    // console au lieu de la section status.
+    setTimeout(() => {
+      try {
         const detected = GridDetector.detect(currentImage);
         const ms = (performance.now() - start).toFixed(1);
         const t = detected.timing || {};
@@ -112,11 +116,11 @@
         exportBtn.classList.remove("hidden");
         renderAll();
         setStatus(breakdown, "info");
-      }, 0);
-    } catch (err) {
-      setStatus("Erreur de détection : " + err.message, "error");
-      console.error(err);
-    }
+      } catch (err) {
+        setStatus("Erreur de détection : " + err.message, "error");
+        console.error(err);
+      }
+    }, 0);
   }
 
   // Initialise l'état éditable depuis la grille détectée.

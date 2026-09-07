@@ -214,39 +214,15 @@ object GridDetector {
     private const val AXIS_VERTICAL = 0
     private const val AXIS_HORIZONTAL = 1
 
-    private fun isContourLine(
-        image: PixelImage,
-        equalBg: (IntArray) -> Boolean,
-        x0: Int,
-        x1: Int,
-        y: Int,
-        step: Int
-    ): Boolean {
-        val colors = mutableListOf<IntArray>()
-        var x = x0
-        while (x <= x1) {
-            val c = image.get(x, y)
-            if (!equalBg(c)) colors.add(c)
-            x += step
-        }
-        if (colors.isEmpty()) return false
-        val clusters = mutableListOf<IntArray>()
-        for (c in colors) {
-            var found = false
-            for (cl in clusters) {
-                if (ColorUtils.colorsEqual(c, cl)) { found = true; break }
-            }
-            if (!found) clusters.add(c)
-        }
-        return clusters.size <= 1
-    }
-
     private data class Pattern(val borderTop: Int, val cellCount: Int)
 
     /**
-     * Balaye les lignes de haut en bas mais s'arrête dès que la structure est
-     * déterminée : bordure externe, première rangée de cases, puis première
-     * bordure interne. Ne balaye donc qu'une petite fraction de la hauteur.
+     * Détecte la structure de la grille en faisant un scan vertical à une seule
+     * colonne (typiquement le milieu). Le scan horizontal d'origine (isContourLine)
+     * échouait sur les grilles fines (ex : 12x12) : sur une rangée contenant une
+     * ligne de grille et des cellules colorées, on obtenait plusieurs clusters de
+     * couleurs et la ligne n'était pas reconnue comme contour. Le scan vertical ne
+     * voit qu'une seule couleur par Y — ligne de grille ou intérieur de cellule.
      */
     private fun detectPattern(
         image: PixelImage,
@@ -256,42 +232,65 @@ object GridDetector {
         y0: Int,
         y1: Int
     ): Pattern {
-        val step = 3
         val gap = 8
-        val merged = mutableListOf<IntArray>() // bandes de contour fusionnées
-        var cur: IntArray? = null
-        var curContour = false
-        var stop = false
+        val bgColor = image.get(0, 0)
 
-        var y = y0
-        while (y <= y1 && !stop) {
-            val isContour = isContourLine(image, equalBg, x0, x1, y, step)
-            if (cur != null && curContour == isContour) {
-                cur!![1] = y
-            } else {
-                if (cur != null) {
-                    if (curContour) {
-                        val last = merged.lastOrNull()
-                        if (last != null && cur!![0] - last[1] <= gap + 1) {
-                            last[1] = cur!![1]
-                        } else {
-                            merged.add(intArrayOf(cur!![0], cur!![1]))
-                        }
-                        if (merged.size >= 2) stop = true
-                    }
+        // Fait un scan vertical à une colonne sX et retourne les bandes de
+        // contour fusionnées (stop dès 2 bandes : bordure externe + première
+        // bordure interne). Retourne null si aucune couleur de contour trouvée
+        // le long de sX (colonne située hors de la grille).
+        fun scanContours(sX: Int): MutableList<IntArray>? {
+            var contourRef: IntArray? = null
+            for (y in y0..y1) {
+                val c = image.get(sX, y)
+                if (!ColorUtils.colorsEqual(c, bgColor)) {
+                    contourRef = c
+                    break
                 }
-                cur = intArrayOf(y, y)
-                curContour = isContour
             }
-            y++
-        }
-        if (cur != null && curContour) {
-            val last = merged.lastOrNull()
-            if (last != null && cur!![0] - last[1] <= gap + 1) last[1] = cur!![1]
-            else merged.add(intArrayOf(cur!![0], cur!![1]))
+            contourRef ?: return null
+
+            val merged = mutableListOf<IntArray>()
+            var cur: IntArray? = null
+            var curContour = false
+            for (y in y0..y1) {
+                val isContour = ColorUtils.colorsEqual(image.get(sX, y), contourRef)
+                if (cur != null && curContour == isContour) {
+                    cur!![1] = y
+                } else {
+                    if (cur != null && curContour) {
+                        val last = merged.lastOrNull()
+                        if (last != null && cur!![0] - last[1] <= gap + 1) last[1] = cur!![1]
+                        else merged.add(intArrayOf(cur!![0], cur!![1]))
+                        // Arrêt précoce : bordure externe puis première bordure interne.
+                        if (merged.size >= 2) break
+                    }
+                    cur = intArrayOf(y, y)
+                    curContour = isContour
+                }
+            }
+            if (cur != null && curContour && merged.size < 2) {
+                val last = merged.lastOrNull()
+                if (last != null && cur!![0] - last[1] <= gap + 1) last[1] = cur!![1]
+                else merged.add(intArrayOf(cur!![0], cur!![1]))
+            }
+            return merged
         }
 
-        if (merged.size < 2) {
+        var merged = scanContours(Math.floorDiv(x0 + x1, 2))
+        if (merged == null || merged.size < 2) {
+            // Fallback : si la colonne médiane tombe sur une bordure verticale
+            // (toujours contour), on n'obtient qu'une bande. On retente ailleurs.
+            val candidates = intArrayOf(
+                Math.floorDiv(x0 + x1, 4),
+                Math.floorDiv(3 * (x0 + x1), 4)
+            )
+            for (sX in candidates) {
+                merged = scanContours(sX)
+                if (merged != null && merged.size >= 2) break
+            }
+        }
+        if (merged == null || merged.size < 2) {
             throw DetectionException("Pattern de grille non détecté.")
         }
 

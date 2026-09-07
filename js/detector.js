@@ -145,61 +145,61 @@ const GridDetector = (() => {
     return { start: run[0], end: run[1] };
   }
 
-  function isContourLine(image, equalBg, x0, x1, y, step) {
-    const colors = [];
-    for (let x = x0; x <= x1; x += step) {
-      const c = image.get(x, y);
-      if (!equalBg(c)) colors.push(c);
-    }
-    if (colors.length === 0) return false;
-    const clusters = [];
-    for (const c of colors) {
-      let found = false;
-      for (const cl of clusters) {
-        if (ColorUtil.equal(c, cl)) { found = true; break; }
-      }
-      if (!found) clusters.push(c);
-    }
-    return clusters.length <= 1;
-  }
-
   function detectPattern(image, equalBg, x0, x1, y0, y1) {
-    const step = 3;
     const gap = 8;
 
-    // Parcourt les lignes de haut en bas, mais s'arrête dès que la structure
-    // est déterminée : bordure externe, première rangée de cases, puis première
-    // bordure interne. Il n'est pas nécessaire d'aller plus loin.
-    const merged = []; // bandes de contour fusionnées : [startY, endY]
-    let cur = null;    // run en cours : [startY, endY, isContour]
-    let stop = false;
-    for (let y = y0; y <= y1 && !stop; y++) {
-      const isContour = isContourLine(image, equalBg, x0, x1, y, step);
-      if (cur && cur[2] === isContour) {
-        cur[1] = y;
-      } else {
-        // On ferme le run en cours ; s'il est un contour, on l'insère dans les
-        // bandes fusionnées (en absorbant les petits écarts de bruit JPEG).
-        if (cur) {
-          if (cur[2]) {
-            const last = merged[merged.length - 1];
-            if (last && cur[0] - last[1] <= gap + 1) last[1] = cur[1];
-            else merged.push([cur[0], cur[1]]);
-            if (merged.length >= 2) stop = true;
-          }
-        }
-        cur = [y, y, isContour];
+    const bgColor = image.get(0, 0);
+    const scanContours = (sX) => {
+      let contourRef = null;
+      for (let y = y0; y <= y1; y++) {
+        const c = image.get(sX, y);
+        if (!ColorUtil.equal(c, bgColor)) { contourRef = c; break; }
       }
-    }
-    if (cur) {
-      if (cur[2]) {
+      if (!contourRef) return null;
+
+      const merged = [];
+      let cur = null;
+      for (let y = y0; y <= y1; y++) {
+        const isContour = ColorUtil.equal(image.get(sX, y), contourRef);
+        if (cur && cur[2] === isContour) {
+          cur[1] = y;
+        } else {
+          if (cur) {
+            if (cur[2]) {
+              const last = merged[merged.length - 1];
+              if (last && cur[0] - last[1] <= gap + 1) last[1] = cur[1];
+              else merged.push([cur[0], cur[1]]);
+            }
+          }
+          cur = [y, y, isContour];
+          // On s'arrête dès que la structure est déterminée : bordure externe
+          // puis première bordure interne.
+          if (cur[2] && merged.length >= 2) break;
+        }
+      }
+      if (cur && cur[2] && merged.length < 2) {
         const last = merged[merged.length - 1];
         if (last && cur[0] - last[1] <= gap + 1) last[1] = cur[1];
         else merged.push([cur[0], cur[1]]);
       }
-    }
+      return merged;
+    };
 
-    if (merged.length < 2) {
+    // Scan vertical au milieu de la grille pour détecter les lignes
+    // horizontales. Le scan horizontal (isContourLine) échoue quand des
+    // lignes fines coexistent avec des cellules colorées sur la même rangée
+    // (ex : grille 12x12) : une seule position X ne voit qu'une seule couleur
+    // par Y — ligne de grille ou intérieur de cellule.
+    let merged = scanContours(Math.floor((x0 + x1) / 2));
+    if (!merged || merged.length < 2) {
+      // Fallback : si midX tombe sur une bordure verticale (toujours contour),
+      // on n'obtient qu'une bande. On retente avec d'autres colonnes.
+      for (const sX of [Math.floor((x0 + x1) / 4), Math.floor(3 * (x0 + x1) / 4)]) {
+        merged = scanContours(sX);
+        if (merged && merged.length >= 2) break;
+      }
+    }
+    if (!merged || merged.length < 2) {
       throw new Error("Pattern de grille non détecté.");
     }
 

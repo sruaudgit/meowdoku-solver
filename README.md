@@ -108,13 +108,15 @@ cd android-app
 ./gradlew testDebugUnitTest
 ```
 
-- `DetectorTest` — vérifie la détection sur le sample de référence (10x10)
+- `DetectorTest` — vérifie la détection sur les samples de référence (10x10 et 12x12)
 - `SolverRegressionTest` — vérifie la résolution sur une grille 9x9 de référence
 
 ### Tests JS (Deno)
 
 ```bash
-deno run --allow-read tests/test_solver_json.js
+deno run --allow-read tests/deno_test.js   # pipeline complet détection + résolution (10x10)
+deno run --allow-read tests/test_12x12.js  # détection sur le sample 12x12
+deno run --allow-read tests/test_solver_json.js  # résolution sur une grille 9x9
 ```
 
 ## Jeu de test
