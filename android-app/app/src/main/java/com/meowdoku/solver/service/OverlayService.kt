@@ -56,12 +56,20 @@ class OverlayService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val path = intent?.getStringExtra(EXTRA_IMAGE_PATH)
+
         if (rootView != null) {
-            // Déjà affiché : on l'ignore.
+            // Déjà affiché : on met à jour l'image avec la nouvelle résolution.
+            if (path == null) return START_NOT_STICKY
+            val loaded = loadBitmap(path)
+            if (loaded == null) return START_NOT_STICKY
+            bitmap?.let { if (!it.isRecycled) it.recycle() }
+            bitmap = loaded
+            currentImagePath = path
+            rootView!!.findViewById<ImageView>(R.id.overlayImage).setImageBitmap(loaded)
             return START_NOT_STICKY
         }
 
-        val path = intent?.getStringExtra(EXTRA_IMAGE_PATH)
         val loaded = if (path == null) null else loadBitmap(path)
         if (loaded == null) {
             stopSelf()
