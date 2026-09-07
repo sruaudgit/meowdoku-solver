@@ -22,6 +22,15 @@
             android:contentDescription="@string/overlay_fullscreen" />
 
         <ImageView
+            android:id="@+id/overlayCapture"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="top|center_horizontal"
+            android:padding="8dp"
+            android:src="@drawable/ic_capture"
+            android:contentDescription="@string/overlay_capture" />
+
+        <ImageView
             android:id="@+id/overlayClose"
             android:layout_width="36dp"
             android:layout_height="36dp"
@@ -31,11 +40,28 @@
             android:contentDescription="@string/overlay_close" />
     </FrameLayout>
 
-    <ImageView
-        android:id="@+id/overlayImage"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        android:contentDescription="@string/solution_desc" />
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/overlayImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/solution_desc"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/overlayPlaceholder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/overlay_text_bg"
+            android:gravity="center"
+            android:text="@string/overlay_placeholder"
+            android:textColor="#FFFFFFFF"
+            android:textSize="13sp" />
+    </FrameLayout>
 </LinearLayout>

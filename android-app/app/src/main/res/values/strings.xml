@@ -9,9 +9,19 @@
     <string name="overlay_close">Fermer la superposition</string>
     <string name="overlay_fullscreen">Afficher en plein écran</string>
     <string name="overlay_back">Revenir en superposition</string>
+    <string name="overlay_capture">Capturer l\'écran et résoudre</string>
     <string name="overlay_permission_required">Pour afficher la solution par-dessus le jeu, autorisez « Afficher par-dessus les autres applications ».</string>
     <string name="overlay_permission_allow">Autoriser</string>
+    <string name="capture_active_title">Capture d\'écran active</string>
+    <string name="capture_active_text">L\'overlay peut capturer l\'écran pour résoudre la grille</string>
+    <string name="capture_denied">Capture d\'écran refusée</string>
+    <string name="capture_failed">Échec de la capture d\'écran</string>
+    <string name="capture_success">Grille résolue — overlay mis à jour</string>
     <string name="notification_error">Échec de l\'analyse</string>
     <string name="analyzing">Analyse de la grille en cours…</string>
     <string name="solution_desc">Grille Meowdoku résolue</string>
+    <string name="overlay_open">Afficher l\'overlay</string>
+    <string name="overlay_open_desc">Ouvrir l\'overlay directement depuis l\'application, sans passer par le partage d\'image.</string>
+    <string name="overlay_placeholder">Prêt à capturer — ouvrez le jeu puis touchez 📷</string>
+    <string name="overlay_placeholder_failed">Échec de l\'analyse — re-touchez 📷</string>
 </resources>

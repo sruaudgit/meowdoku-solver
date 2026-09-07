@@ -48,12 +48,28 @@ Application Kotlin native (pas de WebView). Compatible Android API 26+.
 
 ### Fonctionnement
 
-1. L'utilisateur partage une capture d'écran vers l'app Meowdoku Solver (via le menu de partage Android)
-2. Le `ShareReceiverActivity` copie l'image et lance le `SolveService`
-3. Le `SolveService` (foreground service) exécute le pipeline : détection → résolution → rendu → notification
-4. Une notification avec vignette de la solution apparaît
-5. Le clic ouvre la solution en **superposition** (overlay) par-dessus le jeu, grâce au `OverlayService`
-6. Depuis l'overlay, on peut fermer (×), déplacer (drag), ou basculer en **plein écran** (bouton en haut à gauche) ; le bouton plein écran masque l'overlay, et un bouton dans le plein écran permet de revenir en overlay
+Deux façons d'obtenir la solution :
+
+1. **Par partage** : l'utilisateur partage une capture d'écran vers l'app Meowdoku Solver (via le menu de partage Android)
+2. **Par capture d'écran directe** : depuis l'écran d'accueil, toucher **Afficher l'overlay**, puis dans le jeu toucher le bouton 📷 de l'overlay. Un consentement `MediaProjection` est demandé la première fois, puis la grille est capturée et résolue sans quitter le jeu
+
+Dans les deux cas, une notification avec vignette de la solution apparaît, et la solution s'affiche en **superposition** (overlay) par-dessus le jeu, grâce au `OverlayService`.
+
+Depuis l'overlay :
+
+- **Capture** (📷) — capture l'écran du jeu et met à jour la solution. Pendant l'analyse, l'image se grise avec le texte « Analyse en cours… » ; en cas d'échec elle reste grisée (« Échec de l'analyse — re-touchez 📷 »)
+- **Fermer** (×) et **déplacer** (drag)
+- **Plein écran** (bouton en haut à gauche) — masque l'overlay pour consulter la solution en grand ; un bouton permet de revenir en overlay
+- L'overlay peut être ouvert sans image (texte « Prêt à capturer » au centre) ; la hauteur ne varie pas selon les messages
+
+### Structures de capture
+
+La capture d'écran utilise `CaptureService` (foreground service type `mediaProjection`) :
+
+- `CaptureConsentActivity` demande le consentement `MediaProjection` (lancée dans une tâche vierge pour ne pas découvrir l'écran d'accueil)
+- Une seule `VirtualDisplay` persistante (`AUTO_MIRROR`) est créée : Android 14+ interdit d'en créer plusieurs avec la même projection
+- Un `ImageReader` conserve en continu la dernière frame (`lastFrame`), ce qui évite les captures vides lorsque des frames sont consommées entre l'acquisition et la lecture
+- `SolutionProcessor` factorise le pipeline commun : redimensionnement à 1080px → détection → résolution → rendu → sauvegarde
 
 ### Structure
 
@@ -66,12 +82,15 @@ app/src/main/java/com/meowdoku/solver/
     GridDetector.kt            — Détection de grille (port fidèle de detector.js)
   solver/
     GridSolver.kt              — Solveur CSP backtracking (port fidèle de solver.js)
+    SolutionProcessor.kt       — Pipeline commun détection → résolution → rendu → sauvegarde
   service/
-    SolveService.kt            — ForegroundService dédié (pipeline complet)
-    OverlayService.kt          — Overlay flottant (chat head) : fermeture, drag, plein écran
+    SolveService.kt            — ForegroundService dédié au partage d'image
+    CaptureService.kt          — Capture d'écran MediaProjection (VirtualDisplay persistante)
+    OverlayService.kt          — Overlay flottant (chat head) : capture, fermeture, drag, plein écran
   ui/
-    MainActivity.kt            — Écran d'accueil
+    MainActivity.kt            — Écran d'accueil (bouton « Afficher l'overlay »)
     ShareReceiverActivity.kt   — Réception du partage d'image
+    CaptureConsentActivity.kt  — Consentement MediaProjection
     SolutionActivity.kt        — Affichage plein écran de la solution
     GridRenderer.kt            — Rendu de la solution sur Bitmap
   notification/
@@ -96,8 +115,9 @@ L'APK de debug est généré dans `app/build/outputs/apk/debug/`.
 ### Permissions
 
 - `POST_NOTIFICATIONS` — afficher la notification de solution
-- `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_DATA_SYNC` — maintenir le calcul actif en arrière-plan
+- `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PROJECTION` — maintenir le calcul et la capture d'écran actifs en arrière-plan
 - `SYSTEM_ALERT_WINDOW` — afficher l'overlay de solution par-dessus les autres applications
+- `MediaProjection` (consentement par session, demandé au premier clic sur 📷)
 
 ## Tests
 

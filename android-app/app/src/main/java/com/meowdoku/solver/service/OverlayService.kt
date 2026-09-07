@@ -34,6 +34,11 @@ class OverlayService : Service() {
                 .putExtra(EXTRA_IMAGE_PATH, imagePath)
             context.startService(intent)
         }
+
+        /** Ouvre l'overlay sans image : prêt à lancer une capture d'écran. */
+        fun enqueue(context: Context) {
+            context.startService(Intent(context, OverlayService::class.java))
+        }
     }
 
     private lateinit var windowManager: WindowManager
@@ -67,11 +72,13 @@ class OverlayService : Service() {
             bitmap = loaded
             currentImagePath = path
             rootView!!.findViewById<ImageView>(R.id.overlayImage).setImageBitmap(loaded)
+            applyImageVisibility(true)
             return START_NOT_STICKY
         }
 
+        // Sans image, on affiche quand même l'overlay (bouton capture prêt à l'emploi).
         val loaded = if (path == null) null else loadBitmap(path)
-        if (loaded == null) {
+        if (path != null && loaded == null) {
             stopSelf()
             return START_NOT_STICKY
         }
@@ -83,8 +90,13 @@ class OverlayService : Service() {
         val inflater = android.view.LayoutInflater.from(this)
         rootView = inflater.inflate(R.layout.overlay_view, null)
         rootView!!.findViewById<ImageView>(R.id.overlayImage).setImageBitmap(loaded)
+        applyImageVisibility(loaded != null)
 
         rootView!!.findViewById<View>(R.id.overlayClose).setOnClickListener { dismiss() }
+
+        rootView!!.findViewById<View>(R.id.overlayCapture).setOnClickListener {
+            startCapture()
+        }
 
         rootView!!.findViewById<View>(R.id.overlayFullscreen).setOnClickListener {
             val imagePath = currentImagePath ?: return@setOnClickListener
@@ -122,9 +134,76 @@ class OverlayService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (CaptureService.resultListener === onCaptureResult) {
+            CaptureService.resultListener = null
+        }
+        CaptureService.stop(this)
         removeViewIfPresent()
         bitmap?.let { if (!it.isRecycled) it.recycle() }
         bitmap = null
+    }
+
+    private fun startCapture() {
+        CaptureService.resultListener = onCaptureResult
+        grayOut(R.string.analyzing)
+        CaptureService.triggerCapture(this)
+    }
+
+    /** Grise l'image et affiche un texte d'état (analyse en cours ou échec). */
+    private fun grayOut(textRes: Int) {
+        val image = rootView?.findViewById<ImageView>(R.id.overlayImage)
+        val gray = android.graphics.ColorMatrix()
+        gray.setSaturation(0f)
+        image?.setColorFilter(android.graphics.ColorMatrixColorFilter(gray))
+        image?.alpha = 0.35f
+        (rootView?.findViewById<View>(R.id.overlayPlaceholder) as? android.widget.TextView)?.apply {
+            visibility = View.VISIBLE
+            setText(textRes)
+        }
+    }
+
+    /** Restaure l'affichage normal (couleurs pleines, placeholder hors champ si image). */
+    private fun restoreImage() {
+        val image = rootView?.findViewById<ImageView>(R.id.overlayImage)
+        image?.clearColorFilter()
+        image?.alpha = 1f
+        (rootView?.findViewById<View>(R.id.overlayPlaceholder) as? android.widget.TextView)?.let {
+            it.visibility = if (bitmap != null) View.GONE else View.VISIBLE
+            if (bitmap == null) it.setText(R.string.overlay_placeholder)
+        }
+    }
+
+    private val onCaptureResult: (String?) -> Unit = { solutionPath ->
+        val hadImage = bitmap != null
+        if (solutionPath != null) {
+            val loaded = loadBitmap(solutionPath)
+            if (loaded != null) {
+                bitmap?.let { if (!it.isRecycled) it.recycle() }
+                bitmap = loaded
+                currentImagePath = solutionPath
+                rootView?.findViewById<ImageView>(R.id.overlayImage)?.setImageBitmap(loaded)
+                applyImageVisibility(true)
+                restoreImage()
+                android.widget.Toast.makeText(this, R.string.capture_success, android.widget.Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            // Échec : la solution affichée n'est plus valide, on maintient le grisé.
+            android.widget.Toast.makeText(this, R.string.capture_failed, android.widget.Toast.LENGTH_SHORT).show()
+            grayOut(R.string.overlay_placeholder_failed)
+        }
+        if (bitmap == null && !hadImage) {
+            applyImageVisibility(false)
+            (rootView?.findViewById<View>(R.id.overlayPlaceholder) as? android.widget.TextView)?.setText(R.string.overlay_placeholder)
+        }
+    }
+
+    private fun applyImageVisibility(hasImage: Boolean) {
+        rootView?.findViewById<ImageView>(R.id.overlayImage)?.let {
+            it.visibility = if (hasImage) View.VISIBLE else View.GONE
+        }
+        rootView?.findViewById<View>(R.id.overlayPlaceholder)?.let {
+            it.visibility = if (hasImage) View.GONE else View.VISIBLE
+        }
     }
 
     private fun loadBitmap(path: String): Bitmap? {

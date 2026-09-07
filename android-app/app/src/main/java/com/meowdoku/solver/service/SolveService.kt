@@ -13,7 +13,7 @@ import com.meowdoku.solver.R
 import com.meowdoku.solver.detector.GridDetector
 import com.meowdoku.solver.notification.NotificationHelper
 import com.meowdoku.solver.solver.GridSolver
-import com.meowdoku.solver.ui.GridRenderer
+import com.meowdoku.solver.solver.SolutionProcessor
 import java.io.File
 import java.io.FileOutputStream
 
@@ -76,44 +76,18 @@ class SolveService : Service() {
             }
             Log.d(TAG, "Image chargée : ${sourceBitmap.width}x${sourceBitmap.height}")
 
-            val scaled = if (sourceBitmap.width == TARGET_WIDTH) {
-                sourceBitmap
-            } else {
-                val scale = TARGET_WIDTH.toFloat() / sourceBitmap.width.toFloat()
-                val targetHeight = (sourceBitmap.height.toFloat() * scale).toInt().coerceAtLeast(1)
-                val copy = Bitmap.createScaledBitmap(sourceBitmap, TARGET_WIDTH, targetHeight, false)
-                sourceBitmap.recycle()
-                copy
-            }
-
-            val width = scaled.width
-            val height = scaled.height
-            val pixels = IntArray(width * height)
-            scaled.getPixels(pixels, 0, width, 0, 0, width, height)
-            scaled.recycle()
-
             Log.d(TAG, "Détection en cours…")
-            val grid = GridDetector.detect(pixels, width, height)
-            Log.d(TAG, "Grille détectée : ${grid.size}x${grid.size}, ${grid.symbolCount} symbole(s), ${grid.colorMap.size} couleurs")
+            val solutionPath = SolutionProcessor.solveAndSave(this, sourceBitmap)
+            Log.d(TAG, "Solution trouvée : $solutionPath")
 
-            val fixedSymbols = GridSolver.collectSymbols(grid)
-            Log.d(TAG, "Résolution en cours…")
-            val solution = GridSolver.findSolution(grid, fixedSymbols)
-                ?: throw GridSolver.ConsistencyException("Aucune solution trouvée avec les symboles posés.")
-            Log.d(TAG, "Solution trouvée avec ${solution.size} symboles")
-
-            val solutionBmp = GridRenderer.renderSolution(grid, solution)
-
-            val solutionsDir = File(cacheDir, "solutions").apply { mkdirs() }
-            val solutionFile = File(solutionsDir, "solution_${System.currentTimeMillis()}.png")
-            saveBitmap(solutionBmp, solutionFile)
-            val thumbFile = File(solutionsDir, "thumb_${System.currentTimeMillis()}.png")
-            saveThumbnail(solutionBmp, thumbFile)
-            solutionBmp.recycle()
+            val thumbFile = File(cacheDir, "solutions")
+                .apply { mkdirs() }
+                .resolve("thumb_${System.currentTimeMillis()}.png")
+            saveThumbnail(solutionPath, thumbFile)
 
             NotificationHelper.showSolutionNotification(
                 this,
-                solutionFile.absolutePath,
+                solutionPath,
                 thumbFile.absolutePath
             )
             Log.d(TAG, "Terminé avec succès.")
@@ -154,28 +128,18 @@ class SolveService : Service() {
         }
     }
 
-    private fun saveBitmap(bmp: Bitmap, file: File) {
-        FileOutputStream(file).use { out ->
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, out)
-            out.flush()
-        }
-    }
-
-    private fun saveThumbnail(bmp: Bitmap, file: File): Boolean {
-        val thumbW = 256
-        val thumbH = 256
-        val thumb = Bitmap.createScaledBitmap(bmp, thumbW, thumbH, false)
-        val ok = try {
+    private fun saveThumbnail(solutionPath: String, file: File) {
+        try {
+            val full = BitmapFactory.decodeFile(solutionPath) ?: return
+            val thumb = Bitmap.createScaledBitmap(full, 256, 256, false)
+            if (thumb !== full) full.recycle()
             FileOutputStream(file).use { out ->
                 thumb.compress(Bitmap.CompressFormat.JPEG, 85, out)
                 out.flush()
             }
-            true
+            thumb.recycle()
         } catch (e: Exception) {
-            false
-        } finally {
-            if (thumb !== bmp) thumb.recycle()
+            // Miniature optionnelle : on ignore l'échec.
         }
-        return ok
     }
 }

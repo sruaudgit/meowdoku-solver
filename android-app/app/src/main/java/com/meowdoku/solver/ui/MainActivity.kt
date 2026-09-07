@@ -14,9 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.meowdoku.solver.R
+import com.meowdoku.solver.service.OverlayService
 
 /**
- * Écran d'accueil : explique comment utiliser l'app par partage.
+ * Écran d'accueil : explique comment utiliser l'app par partage ou via l'overlay.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +40,19 @@ class MainActivity : AppCompatActivity() {
             setPadding(0, 0, 0, (24 * resources.displayMetrics.density).toInt())
         }
 
+        val overlayButton = Button(this).apply {
+            text = getString(R.string.overlay_open)
+            setOnClickListener { openOverlay() }
+        }
+
+        val overlayDesc = TextView(this).apply {
+            text = getString(R.string.overlay_open_desc)
+            textSize = 13f
+            setTextColor(getColor(R.color.white))
+            setLineSpacing(0f, 1.2f)
+            setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, (24 * resources.displayMetrics.density).toInt())
+        }
+
         val body = TextView(this).apply {
             text = "1. Prenez une capture d'écran de la grille du jeu Meowdoku.\n" +
                 "2. Depuis votre galerie photo, ouvrez l'image et choisissez \"Partager\".\n" +
@@ -51,6 +65,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         layout.addView(title)
+        layout.addView(overlayButton, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
+        layout.addView(overlayDesc, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
         layout.addView(body)
 
         if (!Settings.canDrawOverlays(this)) {
@@ -80,6 +102,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContentView(layout)
+    }
+
+    private fun openOverlay() {
+        if (!Settings.canDrawOverlays(this)) {
+            requestOverlayPermission()
+            return
+        }
+        OverlayService.enqueue(this)
+        finish()
     }
 
     private fun requestOverlayPermission() {
