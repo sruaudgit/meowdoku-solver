@@ -199,7 +199,43 @@ object GridDetector {
         val step = maxOf(1, Math.floorDiv(W, 200))
         val run = longestConsecutiveRun({ i -> rowInGrid(image, equalBg, i, W, step) }, H)
             ?: throw DetectionException("Grille non trouvée dans l'image.")
-        return run
+        var start = run.start
+        var end = run.end
+
+        fun isWhiteRow(y: Int): Boolean {
+            var white = 0
+            var total = 0
+            var x = 0
+            while (x < W) {
+                total++
+                val c = image.get(x, y)
+                if (c[0] > 240 && c[1] > 240 && c[2] > 240) white++
+                x += step
+            }
+            return total > 0 && white.toDouble() / total > 0.85
+        }
+
+        // Ignore l'en-tête du nouveau layout : on rogne sur la première et la
+        // dernière bande blanche épaisse (bordures externes de la grille).
+        var i = start
+        while (i <= end) {
+            if (isWhiteRow(i)) {
+                var j = i
+                while (j <= end && isWhiteRow(j)) j++
+                if (j - i >= 12) { start = i; break }
+                i = j
+            } else i++
+        }
+        i = end
+        while (i >= start) {
+            if (isWhiteRow(i)) {
+                var j = i
+                while (j >= start && isWhiteRow(j)) j--
+                if (i - j >= 12) { end = i; break }
+                i = j
+            } else i--
+        }
+        return Bounds(start, end)
     }
 
     private fun findVerticalBounds(image: PixelImage, equalBg: (IntArray) -> Boolean, W: Int, y0: Int, y1: Int): Bounds {

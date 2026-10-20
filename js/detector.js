@@ -135,7 +135,40 @@ const GridDetector = (() => {
     const step = Math.max(1, Math.floor(W / 200));
     const run = longestConsecutiveRun(i => rowInGrid(image, equalBg, i, W, step), H);
     if (!run) throw new Error("Grille non trouvée dans l'image.");
-    return { start: run[0], end: run[1] };
+    let start = run[0], end = run[1];
+
+    // Le nouveau layout ajoute une rangée d'en-tête au-dessus de la grille,
+    // séparée par une bordure blanche épaisse. On rogne les bornes horizontales
+    // sur la première et la dernière bande blanche épaisse (bordures externes
+    // de la grille) afin d'ignorer cet en-tête.
+    const isWhiteRow = (y) => {
+      let white = 0, total = 0;
+      for (let x = 0; x < W; x += step) {
+        total++;
+        const c = image.get(x, y);
+        if (c[0] > 240 && c[1] > 240 && c[2] > 240) white++;
+      }
+      return total > 0 && white / total > 0.85;
+    };
+    let i = start;
+    while (i <= end) {
+      if (isWhiteRow(i)) {
+        let j = i;
+        while (j <= end && isWhiteRow(j)) j++;
+        if (j - i >= 12) { start = i; break; }
+        i = j;
+      } else i++;
+    }
+    i = end;
+    while (i >= start) {
+      if (isWhiteRow(i)) {
+        let j = i;
+        while (j >= start && isWhiteRow(j)) j--;
+        if (i - j >= 12) { end = i; break; }
+        i = j;
+      } else i--;
+    }
+    return { start, end };
   }
 
   function findVerticalBounds(image, equalBg, W, y0, y1) {
